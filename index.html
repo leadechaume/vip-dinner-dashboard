@@ -26,18 +26,15 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:var(--font); background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
 
-  /* Header */
   .header {
     background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
-    padding: 28px 36px 0;
-    color: #fff;
+    padding: 28px 36px 0; color: #fff;
   }
   .header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
   .header h1 { font-size:24px; font-weight:800; letter-spacing:-0.5px; }
   .header-sub { font-size:13px; opacity:0.7; margin-top:4px; }
   .header-meta { font-size:12px; opacity:0.6; }
 
-  /* Tabs */
   .tabs { display:flex; gap:4px; }
   .tab {
     padding:10px 28px; font-size:14px; font-weight:600;
@@ -53,16 +50,13 @@
   }
   .tab.active .tab-badge { background:var(--violet-light); color:var(--indigo); }
 
-  /* Main */
   .main { max-width:1100px; margin:0 auto; padding:24px 36px 40px; }
   .main > * + * { margin-top:20px; }
 
-  /* Grid helpers */
   .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .kpi-row { display:flex; gap:16px; flex-wrap:wrap; }
   @media (max-width:800px) { .grid-2 { grid-template-columns:1fr; } .kpi-row { flex-direction:column; } }
 
-  /* Countdown */
   .countdown {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     border-radius:16px; padding:20px 28px; color:#fff;
@@ -73,7 +67,6 @@
   .countdown-num { font-size:42px; font-weight:800; line-height:1; }
   .countdown-unit { font-size:14px; opacity:0.8; margin-left:4px; }
 
-  /* Break-even box */
   .breakeven-box {
     background:var(--card); border-radius:var(--radius); padding:18px 22px;
     box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border);
@@ -83,7 +76,6 @@
   .be-value { font-size:22px; font-weight:700; }
   .be-profit { font-size:13px; font-weight:600; display:flex; align-items:center; gap:4px; margin-top:4px; }
 
-  /* KPI card */
   .kpi {
     background:var(--card); border-radius:var(--radius); padding:18px 22px;
     box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border);
@@ -93,13 +85,9 @@
   .kpi-title { font-size:12px; color:var(--light); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
   .kpi-val { font-size:26px; font-weight:700; }
   .kpi-sub { font-size:12px; color:var(--muted); margin-top:4px; }
-  .kpi-icon {
-    width:38px; height:38px; border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-  }
+  .kpi-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
   .kpi-icon svg { width:20px; height:20px; }
 
-  /* Section */
   .section {
     background:var(--card); border-radius:var(--radius); padding:22px 26px;
     box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border);
@@ -107,8 +95,8 @@
   .section-head { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
   .section h3 { font-size:16px; font-weight:700; }
   .section-badge { font-size:11px; background:var(--violet-light); color:var(--indigo); padding:2px 10px; border-radius:20px; font-weight:600; }
+  .section-badge.pending { background:#fef9c3; color:#854d0e; }
 
-  /* Table */
   table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
   th {
     text-align:left; padding:10px 14px; background:#f9fafb; color:var(--muted);
@@ -124,36 +112,31 @@
   tr:nth-child(even) td { background:#fafbfc; }
   tr.total-row td { font-weight:700; background:#f1f5f9 !important; }
 
-  /* Progress / mini bar */
   .minibar { height:8px; border-radius:4px; background:#e5e7eb; width:100%; }
   .minibar-fill { height:100%; border-radius:4px; transition:width 0.6s ease; }
 
-  /* Revenue breakdown bar */
   .rev-bar { display:flex; height:18px; border-radius:9px; overflow:hidden; background:#e5e7eb; }
   .rev-bar-seg { transition:width 0.6s ease; min-width:0; }
   .rev-legend { display:flex; gap:20px; margin-top:10px; flex-wrap:wrap; }
   .rev-legend-item { display:flex; align-items:center; gap:6px; font-size:12px; }
   .rev-dot { width:10px; height:10px; border-radius:3px; }
 
-  /* Badges */
   .badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:12px; font-weight:500; }
   .badge-green { background:#dcfce7; color:#166534; }
   .badge-yellow { background:#fef9c3; color:#854d0e; }
   .badge-red { background:#fee2e2; color:#991b1b; }
   .badge-gray { background:#f1f5f9; color:#475569; }
 
-  /* RSVP progress */
   .rsvp-prog { margin-bottom:16px; }
   .rsvp-prog-top { display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; }
 
-  /* Loading / Error */
   .loading { text-align:center; padding:80px 20px; color:var(--muted); }
   .spinner { width:40px; height:40px; border:3px solid var(--border2); border-top-color:var(--indigo); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
   @keyframes spin { to { transform:rotate(360deg); } }
   .error-box { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:20px; border-radius:var(--radius); text-align:center; }
-
   .coming-soon { text-align:center; padding:80px 20px; color:var(--muted); }
   .coming-soon svg { margin-bottom:16px; }
+  .pending-tag { font-size:10px; background:#fef9c3; color:#854d0e; padding:1px 6px; border-radius:4px; margin-left:6px; font-weight:600; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -174,11 +157,10 @@
 </div>
 
 <script>
-// ── CONFIG ──
 const CONFIG = {
   sheetId: "1IuDnVMB4SwjA-6Ei-j_Af4JExCUUKDhHsy4LjkrbO1s",
   refreshMs: 180000,
-  breakEvenCost: 450000,
+  breakEvenCost: 470000,
   events: [
     { key: "pbw", label: "Paris Blockchain Week", short: "PBW", date: "2026-04-14", color: "#6366f1" },
     { key: "raise", label: "RAISE Summit", short: "RAISE", date: "2026-07-08", color: "#7c3aed" }
@@ -189,16 +171,16 @@ let EVENTS = {};
 let activeEvent = "pbw";
 let lastRefresh = null;
 
-// ── SVG ICONS ──
 const ICONS = {
   revenue: `<svg fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>`,
   table: `<svg fill="none" stroke="#6366f1" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`,
   ticket: `<svg fill="none" stroke="#8b5cf6" stroke-width="2" viewBox="0 0 24 24"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v1a3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3v-1a3 3 0 01-3-3z"/></svg>`,
   person: `<svg fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
   shuttle: `<svg fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 01-2-2V7a4 4 0 014-4h10a4 4 0 014 4v8a2 2 0 01-2 2M5 17l-1 4h1m14-4l1 4h-1M9 17v4m6-4v4"/></svg>`,
+  check: `<svg fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>`,
 };
 
-// ── FETCH with headers param ──
+// ── FETCH ──
 async function fetchSheet(name, headerRows = 1) {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}&headers=${headerRows}`;
   const res = await fetch(url);
@@ -207,10 +189,7 @@ async function fetchSheet(name, headerRows = 1) {
   const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\)/);
   if (!m) throw new Error("Invalid response from Google Sheets");
   const tbl = JSON.parse(m[1]).table;
-  const headers = tbl.cols.map((c, i) => {
-    const lbl = (c.label || "").trim();
-    return lbl || `col_${i}`;
-  });
+  const headers = tbl.cols.map((c, i) => (c.label || "").trim() || `col_${i}`);
   return tbl.rows.map(r => {
     const obj = {};
     headers.forEach((h, i) => {
@@ -226,32 +205,24 @@ async function fetchSheet(name, headerRows = 1) {
 function normOrg(name) { return (name || "").toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, ""); }
 function fmt(n) { return n != null ? "€" + Math.round(n).toLocaleString("fr-FR") : "—"; }
 function pct(n, d) { return d ? Math.round(n / d * 100) + "%" : "—"; }
-
 function getDaysUntil(dateStr) {
   const now = new Date(); now.setHours(0,0,0,0);
-  const target = new Date(dateStr + "T00:00:00");
-  return Math.max(0, Math.ceil((target - now) / 86400000));
+  return Math.max(0, Math.ceil((new Date(dateStr + "T00:00:00") - now) / 86400000));
 }
 
-function miniBar(value, max, color = "#6366f1") {
-  const p = max > 0 ? Math.min(value / max * 100, 100) : 0;
-  return `<div class="minibar"><div class="minibar-fill" style="width:${p}%;background:${color}"></div></div>`;
-}
-
-// ── Circular SVG progress ──
-function circularProgress(pct, size = 140, stroke = 10) {
+function circularProgress(pctVal, size = 140, stroke = 10) {
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
-  const clamped = Math.min(pct, 100);
+  const clamped = Math.min(pctVal, 100);
   const offset = circ - (clamped / 100) * circ;
-  const color = pct >= 100 ? "#10b981" : pct >= 70 ? "#6366f1" : pct >= 40 ? "#f59e0b" : "#ef4444";
+  const color = pctVal >= 100 ? "#10b981" : pctVal >= 70 ? "#6366f1" : pctVal >= 40 ? "#f59e0b" : "#ef4444";
   return `<svg width="${size}" height="${size}">
     <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="${stroke}"/>
     <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
       stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"
       transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset 0.8s ease"/>
     <text x="${size/2}" y="${size/2 - 8}" text-anchor="middle" dominant-baseline="middle"
-      style="font-size:22px;font-weight:700;fill:#111827">${Math.round(pct)}%</text>
+      style="font-size:22px;font-weight:700;fill:#111827">${Math.round(pctVal)}%</text>
     <text x="${size/2}" y="${size/2 + 14}" text-anchor="middle" dominant-baseline="middle"
       style="font-size:11px;fill:#6b7280">of break-even</text>
   </svg>`;
@@ -261,8 +232,21 @@ function circularProgress(pct, size = 140, stroke = 10) {
 function processData(allGuests, sponsorTables, summary) {
   const ag = allGuests.filter(r => r["REGISTRANT TYPE"]);
   const tables = sponsorTables.filter(r => r["SPONSOR'S TABLES"]);
-  const totalTableRevenue = tables.reduce((s, r) => s + (parseFloat(r["TABLE REVENUE"]) || 0), 0);
+
+  // Separate confirmed vs pending sponsor tables (COMMENT column)
+  const confirmedTables = tables.filter(t => !(t["COMMENT"] || "").toString().toUpperCase().includes("PENDING"));
+  const pendingTables = tables.filter(t => (t["COMMENT"] || "").toString().toUpperCase().includes("PENDING"));
+
+  const confirmedTableRevenue = confirmedTables.reduce((s, r) => s + (parseFloat(r["TABLE REVENUE"]) || 0), 0);
+  const pendingTableRevenue = pendingTables.reduce((s, r) => s + (parseFloat(r["TABLE REVENUE"]) || 0), 0);
+  const totalTableRevenue = confirmedTableRevenue + pendingTableRevenue;
+
+  // Table equivalents: 10 seats = 1 table, 5 seats = 0.5
+  const confirmedTableEquiv = confirmedTables.reduce((s, r) => s + ((parseFloat(r["CONTRACT"]) || 0) / 10), 0);
+  const pendingTableEquiv = pendingTables.reduce((s, r) => s + ((parseFloat(r["CONTRACT"]) || 0) / 10), 0);
   const totalTableSeats = tables.reduce((s, r) => s + (parseFloat(r["CONTRACT"]) || 0), 0);
+  const confirmedTableSeats = confirmedTables.reduce((s, r) => s + (parseFloat(r["CONTRACT"]) || 0), 0);
+  const pendingTableSeats = pendingTables.reduce((s, r) => s + (parseFloat(r["CONTRACT"]) || 0), 0);
 
   // By type
   const byType = {};
@@ -278,50 +262,78 @@ function processData(allGuests, sponsorTables, summary) {
   });
 
   const ticketRevenue = (byType["Contract ticket"]?.amount || 0) + (byType["Ticket"]?.amount || 0);
+  const confirmedRevenue = ticketRevenue + confirmedTableRevenue;
   const totalRevenue = ticketRevenue + totalTableRevenue;
 
-  // RSVP
-  const rsvp = { attending: 0, pending: 0, declined: 0, unknown: 0 };
+  // RSVP from SUMMARY sheet (source of truth)
+  const summaryTotal = summary.find(r => (r["Category"] || "").toLowerCase() === "total");
+  const rsvpFromSummary = {
+    confirmed: summaryTotal ? (parseInt(summaryTotal["Confirmed"]) || 0) : 0,
+    pending: summaryTotal ? (parseInt(summaryTotal["Pending"]) || 0) : 0,
+    declined: summaryTotal ? (parseInt(summaryTotal["Declined"]) || 0) : 0,
+  };
+
+  // RSVP from ALL GUESTS (for the breakdown we still need it)
+  const rsvpFromSheet = { attending: 0, notAttending: 0, noRsvp: 0 };
   ag.forEach(r => {
     const s = (r["RSVP STATUS"] || "").toLowerCase().trim();
-    if (s === "attending" || s === "confirmed") rsvp.attending++;
-    else if (s === "declined" || s === "cancelled") rsvp.declined++;
-    else if (!s) rsvp.unknown++;
-    else rsvp.pending++;
+    if (s === "attending" || s === "confirmed") rsvpFromSheet.attending++;
+    else if (s.includes("not attending") || s === "declined" || s === "cancelled") rsvpFromSheet.notAttending++;
+    else rsvpFromSheet.noRsvp++;
   });
 
   // Sponsor details
   const sponsorDetails = tables.map(t => {
     const orgName = t["SPONSOR'S TABLES"] || "";
     const normName = normOrg(orgName);
+    const isPending = (t["COMMENT"] || "").toString().toUpperCase().includes("PENDING");
     const matchGuests = ag.filter(g => g["REGISTRANT TYPE"] === "Contract table" && normOrg(g["ORGANIZATION"]) === normName);
     const regGuests = matchGuests.filter(g => g["FULL NAME"] && String(g["FULL NAME"]).trim());
     const confGuests = matchGuests.filter(g => { const s = (g["RSVP STATUS"]||"").toLowerCase(); return s === "attending" || s === "confirmed"; });
     return {
-      cs: t["CS"] || "", name: orgName,
+      cs: t["CS"] || "", name: orgName, isPending,
       contract: parseFloat(t["CONTRACT"]) || 0,
+      tableEquiv: (parseFloat(t["CONTRACT"]) || 0) / 10,
       revenue: parseFloat(t["TABLE REVENUE"]) || 0,
       totalGuests: matchGuests.length, registered: regGuests.length, confirmed: confGuests.length,
     };
   });
 
   const shuttleCount = ag.filter(r => (r["SHUTTLE"] || "").toString().toLowerCase() === "yes").length;
-  const summaryTotal = summary.find(r => (r["Category"] || "").toLowerCase() === "total");
+  // Shuttle among confirmed guests
+  const shuttleConfirmed = ag.filter(r => {
+    const rsvp = (r["RSVP STATUS"] || "").toLowerCase();
+    const shuttle = (r["SHUTTLE"] || "").toString().toLowerCase();
+    return (rsvp === "attending" || rsvp === "confirmed") && shuttle === "yes";
+  }).length;
+
   const summaryRows = summary.filter(r => r["Category"] && !["total","coe staff (seated)"].includes((r["Category"]||"").toLowerCase()));
 
   return {
     pbw: {
-      totalRevenue, ticketRevenue, tableRevenue: totalTableRevenue,
+      totalRevenue, confirmedRevenue, pendingRevenue: pendingTableRevenue,
+      ticketRevenue, tableRevenue: totalTableRevenue,
+      confirmedTableRevenue, pendingTableRevenue,
       totalGuests: ag.length,
       registeredGuests: ag.filter(r => r["FULL NAME"] && String(r["FULL NAME"]).trim()).length,
-      totalTableSeats, sponsorTableCount: tables.length,
-      byType, rsvp, sponsorDetails, shuttleCount,
+      totalTableSeats, confirmedTableSeats, pendingTableSeats,
+      confirmedTableEquiv, pendingTableEquiv,
+      totalTableEquiv: confirmedTableEquiv + pendingTableEquiv,
+      sponsorTableCount: tables.length,
+      confirmedTableCount: confirmedTables.length,
+      pendingTableCount: pendingTables.length,
+      byType, rsvpFromSummary, rsvpFromSheet,
+      sponsorDetails, shuttleCount, shuttleConfirmed,
+      confirmedGuestsCount: rsvpFromSheet.attending,
       summary: summaryTotal ? {
         quota2026: parseFloat(summaryTotal["Quota 2026"]) || 0,
         registered2026: parseFloat(summaryTotal["Registered names"]) || 0,
         confirmed2026: parseFloat(summaryTotal["Confirmed"]) || 0,
+        pending2026: parseFloat(summaryTotal["Pending"]) || 0,
         revenue2026: parseFloat(summaryTotal["Revenue"]) || 0,
         attended2025: parseFloat(summaryTotal["Attended 2025"]) || 0,
+        quota2025: parseFloat(summaryTotal["Quota 2025"]) || 0,
+        shuttle2026: parseFloat(summaryTotal["Shuttle"]) || 0,
       } : null,
       summaryRows,
     },
@@ -337,7 +349,6 @@ function render() {
       " " + lastRefresh.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
   }
 
-  // Tabs
   document.getElementById("tabs").innerHTML = CONFIG.events.map(e =>
     `<button class="tab ${activeEvent === e.key ? 'active' : ''}" onclick="switchEvent('${e.key}')">
       ${e.label}<span class="tab-badge">${e.short}</span>
@@ -361,7 +372,10 @@ function render() {
   const dateStr = new Date(evCfg.date).toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
   const bePct = CONFIG.breakEvenCost > 0 ? (ev.totalRevenue / CONFIG.breakEvenCost) * 100 : 0;
   const profit = ev.totalRevenue - CONFIG.breakEvenCost;
-  const confPct = ev.totalGuests ? Math.round(ev.rsvp.attending / ev.totalGuests * 100) : 0;
+  const pendingPct = ev.totalRevenue > 0 ? Math.round(ev.pendingRevenue / ev.totalRevenue * 100) : 0;
+  const rsvp = ev.rsvpFromSummary;
+  const totalRsvpKnown = rsvp.confirmed + rsvp.pending + rsvp.declined;
+  const shuttlePctConfirmed = ev.confirmedGuestsCount > 0 ? Math.round(ev.shuttleConfirmed / ev.confirmedGuestsCount * 100) : 0;
 
   app.innerHTML = `
     <!-- Row 1: Countdown + Break-even -->
@@ -395,7 +409,7 @@ function render() {
           <div>
             <div class="kpi-title">Total Revenue</div>
             <div class="kpi-val" style="color:var(--green)">${fmt(ev.totalRevenue)}</div>
-            <div class="kpi-sub">Tables ${fmt(ev.tableRevenue)} · Tickets ${fmt(ev.ticketRevenue)}</div>
+            <div class="kpi-sub">Confirmed: ${fmt(ev.confirmedRevenue)} · <span style="color:#854d0e">Pending: ${fmt(ev.pendingRevenue)} (${pendingPct}%)</span></div>
           </div>
           <div class="kpi-icon" style="background:#10b98115">${ICONS.revenue}</div>
         </div>
@@ -404,8 +418,8 @@ function render() {
         <div class="kpi-top">
           <div>
             <div class="kpi-title">Sponsor Tables</div>
-            <div class="kpi-val">${ev.sponsorTableCount}</div>
-            <div class="kpi-sub">${ev.totalTableSeats} contracted seats</div>
+            <div class="kpi-val">${ev.confirmedTableEquiv}<span style="font-size:16px;color:var(--muted);font-weight:500"> + ${ev.pendingTableEquiv} pending</span></div>
+            <div class="kpi-sub">${ev.confirmedTableSeats} seats confirmed · ${ev.pendingTableSeats} pending</div>
           </div>
           <div class="kpi-icon" style="background:#6366f115">${ICONS.table}</div>
         </div>
@@ -424,24 +438,29 @@ function render() {
         <div class="kpi-top">
           <div>
             <div class="kpi-title">RSVP Confirmed</div>
-            <div class="kpi-val" style="color:var(--green)">${ev.rsvp.attending}</div>
-            <div class="kpi-sub">${confPct}% of total · Declined: ${ev.rsvp.declined}</div>
+            <div class="kpi-val" style="color:var(--green)">${rsvp.confirmed}</div>
+            <div class="kpi-sub">Pending: ${rsvp.pending} · Declined: ${rsvp.declined}</div>
           </div>
-          <div class="kpi-icon" style="background:#10b98115">${ICONS.ticket}</div>
+          <div class="kpi-icon" style="background:#10b98115">${ICONS.check}</div>
         </div>
       </div>
     </div>
 
     <!-- Revenue Breakdown -->
     <div class="section">
-      <div class="section-head"><h3>Revenue Breakdown</h3></div>
+      <div class="section-head">
+        <h3>Revenue Breakdown</h3>
+        ${pendingPct > 0 ? `<span class="section-badge pending">${pendingPct}% pending</span>` : ''}
+      </div>
       <div class="rev-bar">
-        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? ev.tableRevenue / ev.totalRevenue * 100 : 0}%;background:#6366f1"></div>
-        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? (byType_amount('Contract ticket', ev) / ev.totalRevenue * 100) : 0}%;background:#8b5cf6"></div>
-        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? (byType_amount('Ticket', ev) / ev.totalRevenue * 100) : 0}%;background:#a78bfa"></div>
+        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? ev.confirmedTableRevenue / ev.totalRevenue * 100 : 0}%;background:#6366f1"></div>
+        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? ev.pendingTableRevenue / ev.totalRevenue * 100 : 0}%;background:#6366f180"></div>
+        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? ((ev.byType["Contract ticket"]?.amount || 0) / ev.totalRevenue * 100) : 0}%;background:#8b5cf6"></div>
+        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? ((ev.byType["Ticket"]?.amount || 0) / ev.totalRevenue * 100) : 0}%;background:#a78bfa"></div>
       </div>
       <div class="rev-legend">
-        <div class="rev-legend-item"><div class="rev-dot" style="background:#6366f1"></div><span style="color:var(--muted)">Contract Tables</span><span style="font-weight:600">${fmt(ev.tableRevenue)}</span></div>
+        <div class="rev-legend-item"><div class="rev-dot" style="background:#6366f1"></div><span style="color:var(--muted)">Tables (confirmed)</span><span style="font-weight:600">${fmt(ev.confirmedTableRevenue)}</span></div>
+        <div class="rev-legend-item"><div class="rev-dot" style="background:#6366f180"></div><span style="color:var(--muted)">Tables (pending)</span><span style="font-weight:600;color:#854d0e">${fmt(ev.pendingTableRevenue)}</span></div>
         <div class="rev-legend-item"><div class="rev-dot" style="background:#8b5cf6"></div><span style="color:var(--muted)">Contract Tickets</span><span style="font-weight:600">${fmt(ev.byType["Contract ticket"]?.amount || 0)}</span></div>
         <div class="rev-legend-item"><div class="rev-dot" style="background:#a78bfa"></div><span style="color:var(--muted)">Individual Tickets</span><span style="font-weight:600">${fmt(ev.byType["Ticket"]?.amount || 0)}</span></div>
       </div>
@@ -450,18 +469,19 @@ function render() {
     <!-- RSVP + Guest Breakdown -->
     <div class="grid-2">
       <div class="section">
-        <div class="section-head"><h3>RSVP Status</h3><span class="section-badge">${ev.rsvp.attending} confirmed</span></div>
+        <div class="section-head"><h3>RSVP Status</h3><span class="section-badge">${rsvp.confirmed} confirmed</span></div>
         <div class="rsvp-prog">
-          <div class="rsvp-prog-top"><span>Confirmed</span><span>${confPct}%</span></div>
-          <div class="minibar" style="height:12px;border-radius:6px"><div class="minibar-fill" style="width:${confPct}%;background:var(--green);border-radius:6px"></div></div>
+          <div class="rsvp-prog-top"><span>Confirmed (RSVP)</span><span>${rsvp.confirmed} / ${rsvp.confirmed + rsvp.pending}</span></div>
+          <div class="minibar" style="height:12px;border-radius:6px">
+            <div class="minibar-fill" style="width:${(rsvp.confirmed + rsvp.pending) > 0 ? rsvp.confirmed / (rsvp.confirmed + rsvp.pending) * 100 : 0}%;background:var(--green);border-radius:6px"></div>
+          </div>
         </div>
         <table>
-          <thead><tr><th>Status</th><th class="c">Count</th><th class="r">%</th></tr></thead>
+          <thead><tr><th>Status</th><th class="c">Count</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><span class="badge badge-green">Attending</span></td><td class="c">${ev.rsvp.attending}</td><td class="r">${pct(ev.rsvp.attending, ev.totalGuests)}</td></tr>
-            <tr><td><span class="badge badge-yellow">Pending</span></td><td class="c">${ev.rsvp.pending}</td><td class="r">${pct(ev.rsvp.pending, ev.totalGuests)}</td></tr>
-            <tr><td><span class="badge badge-gray">No RSVP</span></td><td class="c">${ev.rsvp.unknown}</td><td class="r">${pct(ev.rsvp.unknown, ev.totalGuests)}</td></tr>
-            <tr><td><span class="badge badge-red">Declined</span></td><td class="c">${ev.rsvp.declined}</td><td class="r">${pct(ev.rsvp.declined, ev.totalGuests)}</td></tr>
+            <tr><td><span class="badge badge-green">Confirmed</span></td><td class="c">${rsvp.confirmed}</td><td style="font-size:12px;color:var(--muted)">RSVP received — attending</td></tr>
+            <tr><td><span class="badge badge-yellow">Pending</span></td><td class="c">${rsvp.pending}</td><td style="font-size:12px;color:var(--muted)">Name registered — awaiting RSVP</td></tr>
+            <tr><td><span class="badge badge-red">Declined</span></td><td class="c">${rsvp.declined}</td><td style="font-size:12px;color:var(--muted)">RSVP received — not attending</td></tr>
           </tbody>
         </table>
       </div>
@@ -480,17 +500,22 @@ function render() {
 
     <!-- Sponsor Tables -->
     <div class="section">
-      <div class="section-head"><h3>Sponsor Tables</h3><span class="section-badge">${ev.sponsorTableCount} tables</span></div>
+      <div class="section-head">
+        <h3>Sponsor Tables</h3>
+        <span class="section-badge">${ev.confirmedTableEquiv} confirmed</span>
+        ${ev.pendingTableCount > 0 ? `<span class="section-badge pending">+ ${ev.pendingTableEquiv} pending</span>` : ''}
+      </div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Seats</th><th class="r">Revenue</th><th class="c">Guests</th><th class="c">Confirmed</th><th>Fill Rate</th></tr></thead>
+          <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Tables</th><th class="c">Seats</th><th class="r">Revenue</th><th class="c">Guests</th><th class="c">Confirmed</th><th>Fill Rate</th></tr></thead>
           <tbody>
             ${ev.sponsorDetails.map(t => {
               const fill = t.contract > 0 ? Math.round(t.totalGuests / t.contract * 100) : 0;
               const fillColor = fill >= 80 ? "var(--green)" : fill >= 50 ? "var(--amber)" : "var(--red)";
               return `<tr>
-                <td class="b">${t.name}</td>
+                <td class="b">${t.name}${t.isPending ? '<span class="pending-tag">PENDING</span>' : ''}</td>
                 <td>${t.cs || "—"}</td>
+                <td class="c">${t.tableEquiv}</td>
                 <td class="c">${t.contract}</td>
                 <td class="r b">${fmt(t.revenue)}</td>
                 <td class="c">${t.registered} / ${t.totalGuests}</td>
@@ -503,6 +528,7 @@ function render() {
             }).join("")}
             <tr class="total-row">
               <td>TOTAL</td><td></td>
+              <td class="c">${ev.totalTableEquiv}</td>
               <td class="c">${ev.totalTableSeats}</td>
               <td class="r">${fmt(ev.tableRevenue)}</td>
               <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.registered,0)} / ${ev.sponsorDetails.reduce((s,t)=>s+t.totalGuests,0)}</td>
@@ -514,22 +540,29 @@ function render() {
       </div>
     </div>
 
-    <!-- 2025 vs 2026 -->
+    <!-- 2025 vs 2026 Comparison -->
     ${ev.summaryRows && ev.summaryRows.length > 0 ? `
     <div class="section">
       <div class="section-head"><h3>2025 vs 2026 Comparison</h3></div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Category</th><th class="c">Quota 2025</th><th class="c">Attended 2025</th><th class="c">Quota 2026</th><th class="c">Registered</th><th class="c">Confirmed</th><th class="r">Revenue</th></tr></thead>
+          <thead><tr>
+            <th>Category</th>
+            <th class="c">Quota 2025</th><th class="c">Registered 2025</th><th class="c">Attended 2025</th>
+            <th class="c" style="border-left:2px solid var(--indigo)">Quota 2026</th><th class="c">Registered</th><th class="c">Confirmed</th><th class="c">Pending</th>
+            <th class="r">Revenue</th>
+          </tr></thead>
           <tbody>
             ${ev.summaryRows.map(r => `
               <tr>
                 <td class="b">${r["Category"]}</td>
                 <td class="c">${r["Quota 2025"] ?? "—"}</td>
+                <td class="c">${r["Registered 2025"] ?? "—"}</td>
                 <td class="c">${r["Attended 2025"] ?? "—"}</td>
-                <td class="c">${r["Quota 2026"] ?? "—"}</td>
+                <td class="c" style="border-left:2px solid #e0e0ff">${r["Quota 2026"] ?? "—"}</td>
                 <td class="c">${r["Registered names"] ?? "—"}</td>
                 <td class="c">${r["Confirmed"] ?? "—"}</td>
+                <td class="c">${r["Pending"] ?? "—"}</td>
                 <td class="r">${r["Revenue"] != null ? fmt(r["Revenue"]) : "—"}</td>
               </tr>
             `).join("")}
@@ -543,16 +576,16 @@ function render() {
       <div class="section-head"><h3>Transport &amp; Shuttle</h3><span class="section-badge">${ev.shuttleCount} requests</span></div>
       <div class="grid-2" style="margin-top:0">
         <div>
-          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
             <div class="kpi-icon" style="background:#ef444415;width:48px;height:48px;border-radius:12px">${ICONS.shuttle}</div>
             <div>
-              <div style="font-size:28px;font-weight:700;color:var(--amber)">${ev.shuttleCount}</div>
-              <div style="font-size:12px;color:var(--muted)">Guests requesting shuttle service</div>
+              <div style="font-size:28px;font-weight:700;color:var(--amber)">${shuttlePctConfirmed}%</div>
+              <div style="font-size:12px;color:var(--muted)">of confirmed guests take the shuttle</div>
             </div>
           </div>
           <div class="rsvp-prog">
-            <div class="rsvp-prog-top"><span>Shuttle coverage</span><span>${ev.totalGuests ? Math.round(ev.shuttleCount / ev.totalGuests * 100) : 0}% of guests</span></div>
-            <div class="minibar" style="height:12px;border-radius:6px"><div class="minibar-fill" style="width:${ev.totalGuests ? Math.min(ev.shuttleCount / ev.totalGuests * 100, 100) : 0}%;background:var(--amber);border-radius:6px"></div></div>
+            <div class="rsvp-prog-top"><span>Shuttle among confirmed (${ev.shuttleConfirmed} / ${ev.confirmedGuestsCount})</span><span>${shuttlePctConfirmed}%</span></div>
+            <div class="minibar" style="height:12px;border-radius:6px"><div class="minibar-fill" style="width:${shuttlePctConfirmed}%;background:var(--amber);border-radius:6px"></div></div>
           </div>
         </div>
         <div>
@@ -571,14 +604,8 @@ function render() {
   `;
 }
 
-// Helper for revenue bar
-function byType_amount(type, ev) {
-  return ev.byType[type]?.amount || 0;
-}
-
 function switchEvent(key) { activeEvent = key; render(); }
 
-// ── LOAD ──
 async function loadAndRender() {
   try {
     const [ag, st, su] = await Promise.all([
