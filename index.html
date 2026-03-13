@@ -178,7 +178,7 @@
 const CONFIG = {
   sheetId: "1IuDnVMB4SwjA-6Ei-j_Af4JExCUUKDhHsy4LjkrbO1s",
   refreshMs: 180000,
-  breakEvenCost: 50000,
+  breakEvenCost: 450000,
   events: [
     { key: "pbw", label: "Paris Blockchain Week", short: "PBW", date: "2026-04-14", color: "#6366f1" },
     { key: "raise", label: "RAISE Summit", short: "RAISE", date: "2026-07-08", color: "#7c3aed" }
@@ -423,11 +423,11 @@ function render() {
       <div class="kpi">
         <div class="kpi-top">
           <div>
-            <div class="kpi-title">Shuttle Requests</div>
-            <div class="kpi-val" style="color:var(--amber)">${ev.shuttleCount}</div>
-            <div class="kpi-sub">Guests requesting transport</div>
+            <div class="kpi-title">RSVP Confirmed</div>
+            <div class="kpi-val" style="color:var(--green)">${ev.rsvp.attending}</div>
+            <div class="kpi-sub">${confPct}% of total · Declined: ${ev.rsvp.declined}</div>
           </div>
-          <div class="kpi-icon" style="background:#ef444415">${ICONS.shuttle}</div>
+          <div class="kpi-icon" style="background:#10b98115">${ICONS.ticket}</div>
         </div>
       </div>
     </div>
@@ -537,6 +537,37 @@ function render() {
         </table>
       </div>
     </div>` : ""}
+
+    <!-- Transport / Shuttle -->
+    <div class="section">
+      <div class="section-head"><h3>Transport &amp; Shuttle</h3><span class="section-badge">${ev.shuttleCount} requests</span></div>
+      <div class="grid-2" style="margin-top:0">
+        <div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+            <div class="kpi-icon" style="background:#ef444415;width:48px;height:48px;border-radius:12px">${ICONS.shuttle}</div>
+            <div>
+              <div style="font-size:28px;font-weight:700;color:var(--amber)">${ev.shuttleCount}</div>
+              <div style="font-size:12px;color:var(--muted)">Guests requesting shuttle service</div>
+            </div>
+          </div>
+          <div class="rsvp-prog">
+            <div class="rsvp-prog-top"><span>Shuttle coverage</span><span>${ev.totalGuests ? Math.round(ev.shuttleCount / ev.totalGuests * 100) : 0}% of guests</span></div>
+            <div class="minibar" style="height:12px;border-radius:6px"><div class="minibar-fill" style="width:${ev.totalGuests ? Math.min(ev.shuttleCount / ev.totalGuests * 100, 100) : 0}%;background:var(--amber);border-radius:6px"></div></div>
+          </div>
+        </div>
+        <div>
+          <table>
+            <thead><tr><th>Guest Type</th><th class="c">Shuttle</th><th class="c">Total</th><th class="r">%</th></tr></thead>
+            <tbody>
+              ${Object.entries(ev.byType).filter(([,d]) => d.shuttle > 0).map(([type, d]) => `
+                <tr><td class="b">${type}</td><td class="c">${d.shuttle}</td><td class="c">${d.count}</td><td class="r">${Math.round(d.shuttle / d.count * 100)}%</td></tr>
+              `).join("")}
+              <tr class="total-row"><td>TOTAL</td><td class="c">${ev.shuttleCount}</td><td class="c">${ev.totalGuests}</td><td class="r">${ev.totalGuests ? Math.round(ev.shuttleCount / ev.totalGuests * 100) : 0}%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   `;
 }
 
