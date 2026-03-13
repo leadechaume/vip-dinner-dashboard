@@ -1,759 +1,455 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VIP Dinner Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f4f5f7; min-height: 100vh; color: #1a1a2e; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIP Dinner Dashboard</title>
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:var(--bg); color:var(--text); }
 
-    :root { --hdr-from: #0c1b6e; --hdr-to: #1a3a8f; --accent: #2c5ae0; --accent-light: #dbeafe; --accent-text: #1e3a8a; }
-    .header { background: linear-gradient(135deg, var(--hdr-from) 0%, var(--hdr-to) 100%); padding: 28px 40px 0; color: #fff; transition: background 0.4s ease; }
-    .header-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 18px; }
-    .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
-    .header .subtitle { margin-top: 4px; font-size: 13px; opacity: 0.55; font-weight: 400; }
-    .header-right { text-align: right; }
-    .header .updated { font-size: 11px; opacity: 0.4; }
-    .header .countdown-mini { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-    .header .countdown-mini strong { font-size: 17px; font-weight: 700; }
+  /* Header */
+  .header { background:var(--primary); color:#fff; padding:20px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .header h1 { font-size:1.5rem; font-weight:700; }
+  .header-meta { display:flex; gap:16px; align-items:center; font-size:0.85rem; opacity:0.85; }
 
-    .tabs { display: flex; gap: 4px; }
-    .tab-btn { padding: 10px 28px; font-size: 13px; font-weight: 600; border: none; border-radius: 8px 8px 0 0; cursor: pointer; transition: all 0.2s; font-family: inherit; letter-spacing: 0.1px; }
-    .tab-btn.active { background: #f4f5f7; color: #1a1a2e; }
-    .tab-btn:not(.active) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55); }
-    .tab-btn .badge { margin-left: 8px; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
-    .tab-btn.active .badge { background: var(--accent-light); color: var(--accent-text); }
-    .tab-btn:not(.active) .badge { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+  /* Event tabs */
+  .tabs { display:flex; gap:8px; padding:16px 32px; background:#fff; border-bottom:1px solid var(--border); }
+  .tab { padding:8px 20px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; font-size:0.9rem; font-weight:500; transition:all .2s; }
+  .tab:hover { background:var(--accent-light); }
+  .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
 
-    .content { padding: 28px 40px 48px; max-width: 1140px; margin: 0 auto; }
-    .dash { display: flex; flex-direction: column; gap: 24px; }
+  /* Main layout */
+  .main { max-width:1400px; margin:0 auto; padding:24px 32px; }
 
-    .hero-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .hero-card { background: #fff; border-radius: 12px; padding: 26px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid #e2e4ea; display: flex; align-items: center; gap: 28px; }
-    .hero-card .hero-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
-    .hero-card .hero-value { font-size: 30px; font-weight: 700; color: #0f172a; margin-top: 6px; letter-spacing: -0.5px; }
-    .hero-card .hero-sub { font-size: 12px; font-weight: 500; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
-    .hero-card .hero-sub.positive { color: #16a34a; }
-    .hero-card .hero-sub.negative { color: #dc2626; }
+  /* KPI row */
+  .kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+  .kpi-label { font-size:0.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+  .kpi-value { font-size:1.8rem; font-weight:700; }
+  .kpi-sub { font-size:0.8rem; color:var(--muted); margin-top:4px; }
+  .kpi-value.green { color:var(--success); }
+  .kpi-value.blue { color:var(--accent); }
+  .kpi-value.orange { color:var(--warning); }
 
-    .row-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-    .kpi-card { background: #fff; border-radius: 12px; padding: 22px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid #e2e4ea; display: flex; flex-direction: column; }
-    .kpi-top { display: flex; justify-content: space-between; align-items: start; }
-    .kpi-title { font-size: 11px; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
-    .kpi-value { font-size: 24px; font-weight: 700; color: #0f172a; letter-spacing: -0.3px; }
-    .kpi-subtitle { font-size: 12px; color: #64748b; margin-top: 4px; line-height: 1.4; }
-    .kpi-icon { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .kpi-icon svg { width: 18px; height: 18px; }
-    .kpi-yoy { font-size: 11px; font-weight: 600; margin-top: 4px; }
-    .kpi-yoy.up { color: #16a34a; }
-    .kpi-yoy.down { color: #dc2626; }
-    .kpi-yoy.neutral { color: #94a3b8; }
-    .kpi-target { margin-top: 14px; }
-    .kpi-target-label { font-size: 10px; color: #94a3b8; margin-bottom: 4px; display: flex; justify-content: space-between; font-weight: 500; }
-    .kpi-target-bar { height: 4px; border-radius: 2px; background: #e2e4ea; overflow: hidden; }
-    .kpi-target-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  /* Section */
+  .section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px; }
+  .section h2 { font-size:1.1rem; font-weight:600; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
 
-    .section { background: #fff; border-radius: 12px; padding: 24px 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid #e2e4ea; }
-    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-    .section-header h3 { font-size: 14px; font-weight: 700; color: #0f172a; letter-spacing: -0.1px; }
-    .section-badge { font-size: 11px; background: var(--accent-light); color: var(--accent-text); padding: 3px 12px; border-radius: 6px; font-weight: 600; }
+  /* Table */
+  table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+  th { text-align:left; padding:10px 12px; background:#f1f5f9; font-weight:600; color:var(--muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
+  td { padding:10px 12px; border-top:1px solid var(--border); }
+  tr:hover td { background:#f8fafc; }
 
-    .collapsible .section-header { cursor: pointer; margin-bottom: 0; user-select: none; }
-    .collapsible .section-header:hover { opacity: 0.8; }
-    .collapsible .coll-chevron { margin-left: auto; font-size: 11px; color: #94a3b8; transition: transform 0.2s; }
-    .collapsible.open .coll-chevron { transform: rotate(180deg); }
-    .collapsible .coll-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
-    .collapsible.open .coll-body { max-height: 4000px; }
-    .collapsible.open .section-header { margin-bottom: 18px; }
+  /* Status badges */
+  .badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.75rem; font-weight:500; }
+  .badge-green { background:#dcfce7; color:#166534; }
+  .badge-yellow { background:#fef9c3; color:#854d0e; }
+  .badge-red { background:#fee2e2; color:#991b1b; }
+  .badge-gray { background:#f1f5f9; color:#475569; }
 
-    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
-    th { text-align: left; padding: 10px 14px; background: #f8f9fb; color: #64748b; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid #e2e4ea; white-space: nowrap; }
-    th.right { text-align: right; } th.center { text-align: center; }
-    td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; }
-    td.right { text-align: right; } td.center { text-align: center; } td.bold { font-weight: 600; color: #0f172a; }
-    tr:nth-child(even) td { background: #fafbfc; }
+  /* Progress bar */
+  .progress-bar { height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:99px; transition:width .5s; }
 
-    .mini-bar { width: 100%; height: 6px; border-radius: 3px; background: #e2e4ea; overflow: hidden; min-width: 70px; }
-    .mini-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  /* Grid 2 cols */
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:900px) { .grid-2 { grid-template-columns:1fr; } }
 
-    .revenue-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #e2e4ea; margin-bottom: 14px; }
-    .revenue-bar-segment { transition: width 0.6s ease; min-width: 2px; }
-    .revenue-legend { display: flex; gap: 24px; flex-wrap: wrap; }
-    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-    .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
-    .legend-label { color: #64748b; }
-    .legend-value { font-weight: 600; color: #0f172a; }
-
-    .guest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
-    .guest-card { background: #f8f9fb; border-radius: 10px; border: 1px solid #e2e4ea; overflow: hidden; cursor: pointer; transition: box-shadow 0.2s; }
-    .guest-card:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    .gc-header { padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
-    .gc-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
-    .gc-info { flex: 1; }
-    .gc-cat { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-    .gc-count { font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 2px; }
-    .gc-chevron { font-size: 10px; color: #94a3b8; transition: transform 0.2s; }
-    .guest-card.open .gc-chevron { transform: rotate(180deg); }
-    .gc-names { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-    .guest-card.open .gc-names { max-height: 600px; overflow-y: auto; }
-    .gc-names-inner { padding: 0 18px 14px; border-top: 1px solid #e2e4ea; }
-    .gc-names-inner ul { list-style: none; padding: 0; margin: 8px 0 0; }
-    .gc-names-inner li { font-size: 12px; color: #334155; padding: 4px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
-    .gc-names-inner li:last-child { border-bottom: none; }
-    .gc-names-inner li .org { color: #94a3b8; font-size: 11px; }
-
-    .logistics-zone { background: #fafaf5; border: 1px solid #e5e3d4; border-radius: 12px; padding: 26px 28px; }
-    .logistics-zone .section-header h3 { color: #44403c; }
-    .logistics-zone .section-badge { background: #f5f0e1; color: #78716c; }
-    .logistics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
-    .transport-card { background: #fff; border-radius: 10px; border: 1px solid #e5e3d4; overflow: hidden; cursor: pointer; transition: box-shadow 0.2s; }
-    .transport-card:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    .tc-header { padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
-    .tc-icon { width: 32px; height: 32px; border-radius: 8px; background: #f5f0e1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .tc-icon svg { width: 16px; height: 16px; color: #78716c; }
-    .tc-info { flex: 1; }
-    .tc-mode { font-size: 12px; font-weight: 600; color: #0f172a; }
-    .tc-count { font-size: 20px; font-weight: 700; color: #44403c; }
-    .tc-pct { font-size: 11px; color: #78716c; margin-left: 4px; font-weight: 500; }
-    .tc-chevron { font-size: 10px; color: #94a3b8; transition: transform 0.2s; }
-    .transport-card.open .tc-chevron { transform: rotate(180deg); }
-    .tc-names { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-    .transport-card.open .tc-names { max-height: 500px; }
-    .tc-names-inner { padding: 0 18px 14px; border-top: 1px solid #e5e3d4; }
-    .tc-names-inner ul { list-style: none; padding: 0; margin: 8px 0 0; }
-    .tc-names-inner li { font-size: 12px; color: #334155; padding: 4px 0; border-bottom: 1px solid #f5f0e1; display: flex; justify-content: space-between; }
-    .tc-names-inner li:last-child { border-bottom: none; }
-    .tc-names-inner li .org { color: #94a3b8; font-size: 11px; }
-
-    .reg-bar { display: flex; height: 5px; border-radius: 3px; overflow: hidden; background: #e2e4ea; width: 100%; min-width: 60px; }
-    .reg-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
-    .reg-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
-    .reg-tag.full { background: #dcfce7; color: #166534; }
-    .reg-tag.partial { background: #fef9c3; color: #854d0e; }
-    .pending-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; background: #fef3c7; color: #92400e; }
-    .rsvp-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; }
-    .rsvp-dot.yes { background: #16a34a; }
-    .rsvp-dot.no { background: #dc2626; }
-    .rsvp-dot.unknown { background: #d1d5db; }
-
-    /* Loading */
-    .loading-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 120px 40px; color: #64748b; gap: 16px; }
-    .spinner { width: 36px; height: 36px; border: 3px solid #e2e4ea; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .error-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 24px 28px; color: #991b1b; }
-    .error-box h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
-    .error-box p { font-size: 13px; line-height: 1.6; }
-    .refresh-bar { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #94a3b8; }
-    .refresh-btn { background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); font-size: 11px; padding: 3px 10px; border-radius: 12px; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-    .refresh-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .refresh-btn.refreshing { opacity: 0.5; pointer-events: none; }
-    .placeholder-msg { text-align: center; padding: 80px 40px; color: #94a3b8; }
-    .placeholder-msg h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #64748b; }
-    .placeholder-msg p { font-size: 13px; }
-
-    @media (max-width: 900px) { .row-kpi { grid-template-columns: 1fr 1fr; } .hero-row { grid-template-columns: 1fr 1fr !important; } }
-    @media (max-width: 600px) {
-      .row-kpi { grid-template-columns: 1fr; } .hero-row { grid-template-columns: 1fr !important; }
-      .header { padding: 20px 16px 0; }
-      .content { padding: 16px; }
-      .hero-card { flex-direction: column; text-align: center; }
-    }
-  </style>
+  /* Loading / Error */
+  .loading { text-align:center; padding:60px 20px; color:var(--muted); }
+  .loading .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .error-box { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:16px; border-radius:var(--radius); text-align:center; margin:24px 0; }
+</style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="header-top">
-      <div style="display:flex;align-items:center;gap:20px;">
-        <img id="eventLogo" src="" alt="" style="height:36px;opacity:0.95;transition:filter 0.3s ease;" />
-        <div>
-          <h1>VIP Dinner Dashboard</h1>
-          <p class="subtitle">Revenue, attendance &amp; logistics overview</p>
-        </div>
+<div class="header">
+  <h1>VIP Dinner Dashboard</h1>
+  <div class="header-meta">
+    <span id="lastRefresh">Loading...</span>
+    <span>Auto-refresh: 3 min</span>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div class="main" id="app">
+  <div class="loading"><div class="spinner"></div>Loading data from Google Sheets...</div>
+</div>
+
+<script>
+// ── CONFIG ──
+const CONFIG = {
+  sheetId: "1IuDnVMB4SwjA-6Ei-j_Af4JExCUUKDhHsy4LjkrbO1s",
+  refreshMs: 180000,
+  events: [
+    { key: "pbw", label: "PBW 2026 — April 14", color: "#2563eb" },
+    { key: "raise", label: "RAISE Summit — July 8-9", color: "#7c3aed" }
+  ]
+};
+
+let EVENTS = {};
+let activeEvent = "pbw";
+let lastRefresh = null;
+
+// ── FETCH with headers param ──
+async function fetchSheet(name, headerRows = 1) {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}&headers=${headerRows}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\)/);
+  if (!m) throw new Error("Invalid response from Google Sheets");
+  const tbl = JSON.parse(m[1]).table;
+
+  // Use cols[i].label as column headers (properly populated with headers=1+)
+  const headers = tbl.cols.map((c, i) => {
+    const lbl = (c.label || "").trim();
+    return lbl || `col_${i}`;
+  });
+
+  // Convert rows to objects
+  return tbl.rows.map(r => {
+    const obj = {};
+    headers.forEach((h, i) => {
+      const cell = (r.c && r.c[i]) ? r.c[i] : null;
+      if (!cell) { obj[h] = null; return; }
+      // Prefer .v (value), fall back to .f (formatted)
+      obj[h] = (cell.v !== undefined && cell.v !== null) ? cell.v : (cell.f || null);
+    });
+    return obj;
+  }).filter(obj => Object.values(obj).some(v => v !== null && v !== ""));
+}
+
+// ── Org name normalization ──
+function normOrg(name) {
+  return (name || "").toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+}
+
+// ── PROCESS DATA ──
+function processData(allGuests, sponsorTables, summary) {
+  // --- PBW event ---
+  const ag = allGuests.filter(r => r["REGISTRANT TYPE"]);
+
+  // Sponsor tables data
+  const tables = sponsorTables.filter(r => r["SPONSOR'S TABLES"]);
+  const totalTableRevenue = tables.reduce((s, r) => s + (parseFloat(r["TABLE REVENUE"]) || 0), 0);
+  const totalTableSeats = tables.reduce((s, r) => s + (parseFloat(r["CONTRACT"]) || 0), 0);
+
+  // By registrant type
+  const byType = {};
+  ag.forEach(r => {
+    const t = r["REGISTRANT TYPE"];
+    if (!byType[t]) byType[t] = { count: 0, registered: 0, amount: 0, confirmed: 0, shuttle: 0 };
+    byType[t].count++;
+    if (r["FULL NAME"] && String(r["FULL NAME"]).trim()) byType[t].registered++;
+    byType[t].amount += parseFloat(r["AMOUNT ALLOCATED TO THE VIP DINNER"]) || 0;
+    const rsvp = (r["RSVP STATUS"] || "").toLowerCase();
+    if (rsvp === "attending" || rsvp === "confirmed") byType[t].confirmed++;
+    if ((r["SHUTTLE"] || "").toString().toLowerCase() === "yes") byType[t].shuttle++;
+  });
+
+  // Ticket revenue (contract tickets + individual tickets)
+  const ticketRevenue = (byType["Contract ticket"]?.amount || 0) + (byType["Ticket"]?.amount || 0);
+  const totalRevenue = ticketRevenue + totalTableRevenue;
+
+  // RSVP counts across all guests
+  const rsvpCounts = { attending: 0, pending: 0, declined: 0, unknown: 0 };
+  ag.forEach(r => {
+    const s = (r["RSVP STATUS"] || "").toLowerCase().trim();
+    if (s === "attending" || s === "confirmed") rsvpCounts.attending++;
+    else if (s === "declined" || s === "cancelled") rsvpCounts.declined++;
+    else if (s === "" || !s) rsvpCounts.unknown++;
+    else rsvpCounts.pending++;
+  });
+
+  // Build sponsor table details with org matching
+  const sponsorDetails = tables.map(t => {
+    const orgName = t["SPONSOR'S TABLES"] || "";
+    const normName = normOrg(orgName);
+    // Find matching guests from ALL GUESTS
+    const matchingGuests = ag.filter(g =>
+      (g["REGISTRANT TYPE"] === "Contract table") && normOrg(g["ORGANIZATION"]) === normName
+    );
+    const registeredGuests = matchingGuests.filter(g => g["FULL NAME"] && String(g["FULL NAME"]).trim());
+    const confirmedGuests = matchingGuests.filter(g => {
+      const s = (g["RSVP STATUS"] || "").toLowerCase();
+      return s === "attending" || s === "confirmed";
+    });
+
+    return {
+      cs: t["CS"] || "",
+      name: orgName,
+      contract: parseFloat(t["CONTRACT"]) || 0,
+      revenue: parseFloat(t["TABLE REVENUE"]) || 0,
+      totalGuests: matchingGuests.length,
+      registered: registeredGuests.length,
+      confirmed: confirmedGuests.length,
+      remaining: parseFloat(t["REMAINING SEATS"]) || (parseFloat(t["CONTRACT"]) || 0) - matchingGuests.length,
+      effectiveConfirmed: parseFloat(t["EFFECTIVE GUESTS WHO CONFIRMED"]) || confirmedGuests.length
+    };
+  });
+
+  // Summary data (2025 vs 2026)
+  const summaryTotal = summary.find(r => (r["Category"] || "").toLowerCase() === "total");
+
+  // Shuttle count
+  const shuttleCount = ag.filter(r => (r["SHUTTLE"] || "").toString().toLowerCase() === "yes").length;
+
+  const pbw = {
+    key: "pbw",
+    totalRevenue,
+    ticketRevenue,
+    tableRevenue: totalTableRevenue,
+    totalGuests: ag.length,
+    registeredGuests: ag.filter(r => r["FULL NAME"] && String(r["FULL NAME"]).trim()).length,
+    totalTableSeats,
+    sponsorTableCount: tables.length,
+    byType,
+    rsvpCounts,
+    sponsorDetails,
+    shuttleCount,
+    summary: summaryTotal ? {
+      quota2026: parseFloat(summaryTotal["Quota 2026"]) || 0,
+      registered2026: parseFloat(summaryTotal["Registered names"]) || 0,
+      confirmed2026: parseFloat(summaryTotal["Confirmed"]) || 0,
+      revenue2026: parseFloat(summaryTotal["Revenue"]) || 0,
+      attended2025: parseFloat(summaryTotal["Attended 2025"]) || 0,
+      quota2025: parseFloat(summaryTotal["Quota 2025"]) || 0,
+    } : null,
+    summaryRows: summary.filter(r => r["Category"] && (r["Category"] || "").toLowerCase() !== "total" && (r["Category"] || "").toLowerCase() !== "coe staff (seated)")
+  };
+
+  return { pbw, raise: null };
+}
+
+// ── FORMAT HELPERS ──
+function fmt(n) { return n != null ? "€" + Math.round(n).toLocaleString("fr-FR") : "—"; }
+function pct(n, d) { return d ? Math.round(n / d * 100) + "%" : "—"; }
+function rsvpBadge(status) {
+  const s = (status || "").toLowerCase().trim();
+  if (s === "attending" || s === "confirmed") return `<span class="badge badge-green">Attending</span>`;
+  if (s === "declined" || s === "cancelled") return `<span class="badge badge-red">Declined</span>`;
+  if (s === "" || !s) return `<span class="badge badge-gray">No RSVP</span>`;
+  return `<span class="badge badge-yellow">${status}</span>`;
+}
+
+// ── RENDER ──
+function render() {
+  // Update refresh time
+  if (lastRefresh) {
+    document.getElementById("lastRefresh").textContent = "Updated: " + lastRefresh.toLocaleTimeString();
+  }
+
+  // Tabs
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = CONFIG.events.map(e =>
+    `<button class="tab ${activeEvent === e.key ? 'active' : ''}" onclick="switchEvent('${e.key}')" style="${activeEvent === e.key ? `background:${e.color};border-color:${e.color}` : ''}">${e.label}</button>`
+  ).join("");
+
+  const app = document.getElementById("app");
+  const ev = EVENTS[activeEvent];
+
+  if (!ev) {
+    app.innerHTML = `<div class="section" style="text-align:center;padding:60px 20px;color:var(--muted)">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:16px"><path d="M12 6v6l4 2M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
+      <h3 style="margin-bottom:8px">Coming Soon</h3>
+      <p>Data for this event will be available when registration opens.</p>
+    </div>`;
+    return;
+  }
+
+  const regPct = ev.summary ? pct(ev.summary.registered2026, ev.summary.quota2026) : pct(ev.registeredGuests, ev.totalGuests);
+  const confPct = pct(ev.rsvpCounts.attending, ev.totalGuests);
+
+  app.innerHTML = `
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value green">${fmt(ev.totalRevenue)}</div>
+        <div class="kpi-sub">Tables: ${fmt(ev.tableRevenue)} · Tickets: ${fmt(ev.ticketRevenue)}</div>
       </div>
-      <div class="header-right">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="updated" id="lastUpdated"></div>
-          <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()" title="Refresh data">&#8635; Refresh</button>
-        </div>
-        <div class="countdown-mini" id="countdownMini"></div>
+      <div class="kpi">
+        <div class="kpi-label">Total Guests</div>
+        <div class="kpi-value blue">${ev.totalGuests}</div>
+        <div class="kpi-sub">Registered: ${ev.registeredGuests} · Quota: ${ev.summary?.quota2026 || "—"}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Sponsor Tables</div>
+        <div class="kpi-value">${ev.sponsorTableCount}</div>
+        <div class="kpi-sub">${ev.totalTableSeats} contracted seats</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">RSVP Confirmed</div>
+        <div class="kpi-value green">${ev.rsvpCounts.attending}</div>
+        <div class="kpi-sub">${confPct} of total · Declined: ${ev.rsvpCounts.declined}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Shuttle Requests</div>
+        <div class="kpi-value orange">${ev.shuttleCount}</div>
+        <div class="kpi-sub">Guests requesting transport</div>
       </div>
     </div>
-    <div class="tabs" id="tabs"></div>
-  </div>
 
-  <div class="content" id="content">
-    <div class="loading-overlay"><div class="spinner"></div><div>Loading data from Google Sheets...</div></div>
-  </div>
+    <!-- BREAKDOWN + RSVP -->
+    <div class="grid-2">
+      <div class="section">
+        <h2>Guest Breakdown by Type</h2>
+        <table>
+          <thead><tr><th>Type</th><th>Total</th><th>Registered</th><th>Revenue</th></tr></thead>
+          <tbody>
+            ${Object.entries(ev.byType).map(([type, d]) => `
+              <tr>
+                <td><strong>${type}</strong></td>
+                <td>${d.count}</td>
+                <td>${d.registered}</td>
+                <td>${d.amount > 0 ? fmt(d.amount) : '<span style="color:var(--muted)">—</span>'}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
 
-  <script>
-    // ═══════════════════════════════════════════════════════════════════════
-    // CONFIGURATION
-    // ═══════════════════════════════════════════════════════════════════════
-    const CONFIG = {
-      sheetId: "1IuDnVMB4SwjA-6Ei-j_Af4JExCUUKDhHsy4LjkrbO1s",
-      refreshMs: 3 * 60 * 1000,
-    };
-
-    let EVENTS = {};
-    let activeTab = "PBW";
-    let lastRefresh = null;
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // GOOGLE SHEETS FETCH
-    // ═══════════════════════════════════════════════════════════════════════
-    async function fetchSheet(name) {
-      const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}&headers=0`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${name}`);
-      const txt = await res.text();
-      const m = txt.match(/setResponse\(([\s\S]+)\)/);
-      if (!m) throw new Error("Invalid response from Google Sheets");
-      const tbl = JSON.parse(m[1]).table;
-      return tbl.rows.map(r =>
-        (r.c || []).map(c => {
-          if (!c) return null;
-          if (c.v !== undefined && c.v !== null) return c.v;
-          if (c.f) return c.f;
-          return null;
-        })
-      );
-    }
-
-    function toObjects(raw, hdrRow = 0) {
-      if (!raw || raw.length <= hdrRow) return [];
-      const hdr = raw[hdrRow].map((h, i) => (h && typeof h === "string") ? h.trim() : `col_${i}`);
-      return raw.slice(hdrRow + 1)
-        .filter(r => r && r.some(c => c !== null && c !== ""))
-        .map(r => {
-          const o = {};
-          hdr.forEach((h, i) => { o[h] = (i < r.length) ? r[i] : null; });
-          return o;
-        });
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // DATA PROCESSING
-    // ═══════════════════════════════════════════════════════════════════════
-    function processData(agRaw, stRaw, suRaw) {
-      const guests = toObjects(agRaw, 0);
-      const sponsors = toObjects(stRaw, 0).filter(r => r["SPONSOR'S TABLES"]);
-
-      // SUMMARY: row 0 is merged header ("2025 PERFORMANCE" / "2026 LIVE PIPELINE"), row 1 has actual column names
-      const summary = toObjects(suRaw, 1);
-      const findSum = (keyword) => summary.find(r => {
-        const cat = (r["Category"] || "").trim();
-        return cat === keyword || cat.includes(keyword);
-      }) || {};
-
-      // ─── CONTRACT TABLES ───
-      const contractTables = sponsors
-        .filter(s => s["CONTRACT"] && parseFloat(s["CONTRACT"]) > 0)
-        .map(s => {
-          const company = (s["SPONSOR'S TABLES"] || "").trim();
-          const seats = parseInt(s["CONTRACT"]) || 0;
-          const revenue = parseFloat(s["TABLE REVENUE"]) || 0;
-          const matching = guests.filter(g =>
-            g["REGISTRANT TYPE"] === "Contract table" &&
-            g["ORGANIZATION"] &&
-            g["ORGANIZATION"].trim().toLowerCase() === company.toLowerCase()
-          );
-          const confirmed = matching.filter(g => g["RSVP STATUS"] === "Attending").length;
-          return {
-            company, seats, revenue,
-            revenuePerSeat: seats > 0 ? Math.round(revenue / seats) : 0,
-            registered: matching.length,
-            confirmed,
-            cs: s["CS"] || "",
-            comment: (s["COMMENT"] || "").toString().trim(),
-          };
-        });
-
-      // ─── CONTRACT TICKETS ───
-      const ctGuests = guests.filter(g => g["REGISTRANT TYPE"] === "Contract ticket");
-      const ctByOrg = {};
-      ctGuests.forEach(g => {
-        const org = (g["ORGANIZATION"] || "Unknown").trim();
-        if (!ctByOrg[org]) ctByOrg[org] = { count: 0, revenue: 0, confirmed: 0 };
-        ctByOrg[org].count++;
-        ctByOrg[org].revenue += parseFloat(g["AMOUNT ALLOCATED TO THE VIP DINNER"]) || 0;
-        if (g["RSVP STATUS"] === "Attending") ctByOrg[org].confirmed++;
-      });
-      const contractTicketSeats = Object.entries(ctByOrg)
-        .map(([org, d]) => ({
-          sponsor: org,
-          tickets: d.count,
-          registered: d.count,
-          confirmed: d.confirmed,
-          revenue: Math.round(d.revenue),
-          revenuePerTicket: d.count > 0 ? Math.round(d.revenue / d.count) : 0,
-        }))
-        .sort((a, b) => b.revenue - a.revenue);
-
-      // ─── INDIVIDUAL TICKETS ───
-      const tickGuests = guests.filter(g => g["REGISTRANT TYPE"] === "Ticket");
-      const tickByPrice = {};
-      tickGuests.forEach(g => {
-        const p = Math.round(parseFloat(g["AMOUNT ALLOCATED TO THE VIP DINNER"]) || 0);
-        if (!tickByPrice[p]) tickByPrice[p] = { count: 0, confirmed: 0 };
-        tickByPrice[p].count++;
-        if (g["RSVP STATUS"] === "Attending") tickByPrice[p].confirmed++;
-      });
-      const maxTickets = Object.entries(tickByPrice).map(([price, d]) => ({
-        type: parseInt(price) > 0 ? `VIP Ticket (\u20AC${parseInt(price).toLocaleString()})` : "VIP Ticket",
-        sold: d.count,
-        price: parseInt(price),
-        confirmed: d.confirmed,
-      }));
-
-      // ─── NON-REVENUE GUESTS ───
-      const nrConfig = {
-        "Free speaker": { label: "Free Speakers", color: "#3b82f6" },
-        "Media/Ambassador": { label: "Media / Ambassadors", color: "#8b5cf6" },
-        "Board guest": { label: "Board Guests", color: "#0f172a" },
-        "Sales prospect": { label: "Sales Prospects", color: "#ea580c" },
-        "+1": { label: "+1 Guests", color: "#6b7280" },
-      };
-      const nonRevenueGuests = Object.entries(nrConfig)
-        .map(([type, meta]) => {
-          const list = guests.filter(g => g["REGISTRANT TYPE"] === type);
-          return {
-            category: meta.label,
-            color: meta.color,
-            guests: list.map(g => ({
-              name: g["FULL NAME"] || [g["FIRST NAME"], g["LAST NAME"]].filter(Boolean).join(" ") || "\u2014",
-              org: g["ORGANIZATION"] || "",
-              rsvp: g["RSVP STATUS"] || "",
-            })),
-          };
-        })
-        .filter(g => g.guests.length > 0);
-
-      // ─── LOGISTICS ───
-      const confirmed = guests.filter(g => g["RSVP STATUS"] === "Attending" && (g["FULL NAME"] || g["FIRST NAME"]));
-      const toG = g => ({
-        name: g["FULL NAME"] || [g["FIRST NAME"], g["LAST NAME"]].filter(Boolean).join(" "),
-        org: g["ORGANIZATION"] || "",
-      });
-      const logistics = [
-        { mode: "Shuttle", guests: confirmed.filter(g => String(g["SHUTTLE"] || "").toLowerCase() === "yes").map(toG) },
-        { mode: "Own Means", guests: confirmed.filter(g => String(g["SHUTTLE"] || "").toLowerCase() === "no").map(toG) },
-        { mode: "TBD", guests: confirmed.filter(g => !g["SHUTTLE"] || String(g["SHUTTLE"]).trim() === "").map(toG) },
-      ];
-
-      // ─── SUMMARY / TARGETS / YOY ───
-      const totalR = findSum("Total");
-      const tableR = findSum("Contract table");
-      const ctR = findSum("Contract ticket");
-      const tickR = findSum("Ticket");
-
-      const num = (obj, key) => parseFloat(obj[key]) || 0;
-
-      const seatsTarget = {
-        global: num(totalR, "Quota 2026") || 670,
-        tables: num(tableR, "Quota 2026") || 160,
-        contractTickets: num(ctR, "Quota 2026") || 235,
-        individualTickets: num(tickR, "Quota 2026") || 120,
-      };
-
-      const lastYear = {
-        totalRevenue: null,
-        totalSeats: num(totalR, "Attended 2025") || 0,
-        tableSeats: num(tableR, "Attended 2025") || 0,
-        contractTicketSeats: num(ctR, "Attended 2025") || 0,
-        individualTickets: num(tickR, "Attended 2025") || 0,
-      };
-
-      return {
-        PBW: {
-          name: "PBW", fullName: "Paris Blockchain Week", date: "2026-04-14",
-          breakEvenCost: 470000, currency: "\u20AC",
-          theme: { from: "#0c1b6e", to: "#1a3a8f", accent: "#2c5ae0", accentLight: "#dbeafe", accentText: "#1e3a8a", bar: ["#0c1b6e", "#2c5ae0", "#6b8de8"] },
-          logo: "https://cdn.prod.website-files.com/68eca791adb89a162563dcd8/68ecd595ff39988d37d9c52f_logo.svg",
-          logoFilter: "brightness(0) invert(1)",
-          contractTables, contractTicketSeats, maxTickets, nonRevenueGuests,
-          seatsTarget, lastYear, logistics,
-        },
-        RAISE: {
-          name: "RAISE", fullName: "RAISE Summit", date: "2026-07-08",
-          breakEvenCost: 65000, currency: "\u20AC",
-          theme: { from: "#0a0a0a", to: "#1a1a2e", accent: "#7c3aed", accentLight: "#ede9fe", accentText: "#5b21b6", bar: ["#2d1b69", "#7c3aed", "#a78bfa"] },
-          logo: "https://cdn.prod.website-files.com/66f11b59c8366f8c2c21551f/691720c7636a1eaf7651aeb4_raise%20logo.svg",
-          logoFilter: "none",
-          contractTables: [], contractTicketSeats: [], maxTickets: [],
-          nonRevenueGuests: [], seatsTarget: { global: 150, tables: 60, contractTickets: 45, individualTickets: 45 },
-          lastYear: { totalRevenue: 45000, totalSeats: 120, tableSeats: 50, contractTicketSeats: 35, individualTickets: 35 },
-          logistics: [],
-          placeholder: true,
-        },
-      };
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // SVG ICONS
-    // ═══════════════════════════════════════════════════════════════════════
-    const ICONS = {
-      tables: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/><line x1="7" y1="16" x2="7" y2="20"/><line x1="17" y1="16" x2="17" y2="20"/></svg>`,
-      ticket: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>`,
-      individual: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`,
-      guests: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-      clipboard: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>`,
-      alert: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-      shuttle: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg>`,
-      car: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>`,
-      walk: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/></svg>`,
-      question: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    };
-    const TRANSPORT_ICONS = { "Shuttle": ICONS.shuttle, "Van / Private Car": ICONS.car, "Own Means": ICONS.walk, "TBD": ICONS.question };
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // HELPERS
-    // ═══════════════════════════════════════════════════════════════════════
-    function getDaysUntil(d) {
-      const now = new Date(); now.setHours(0,0,0,0);
-      const t = new Date(d + "T00:00:00");
-      return Math.max(0, Math.ceil((t - now) / 864e5));
-    }
-    function fmt(n, c) { return c + Math.round(n).toLocaleString("en-US"); }
-    function fmtDate(d) { return new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); }
-    function yoy(cur, prev, isCurrency = false, currency = "\u20AC") {
-      if (!prev && prev !== 0) return { txt: "", cls: "neutral" };
-      if (prev === 0) return { txt: "New", cls: "neutral" };
-      const d = ((cur - prev) / prev) * 100;
-      const prevFmt = isCurrency ? (currency + prev.toLocaleString("en-US")) : prev.toLocaleString("en-US");
-      return { txt: `${d >= 0 ? "+" : ""}${d.toFixed(0)}% vs ${prevFmt} in 2025`, cls: d > 0 ? "up" : d < 0 ? "down" : "neutral" };
-    }
-    function miniBar(v, mx, col = "#475569") {
-      const p = mx > 0 ? Math.min((v / mx) * 100, 100) : 0;
-      return `<div class="mini-bar"><div class="mini-bar-fill" style="width:${p}%;background:${col}"></div></div>`;
-    }
-    function circSVG(pct, sz = 120, st = 9, sub = "of break-even", accentCol) {
-      const r = (sz - st) / 2, ci = 2 * Math.PI * r, cl = Math.min(pct, 100), off = ci - (cl / 100) * ci;
-      const col = pct >= 100 ? "#16a34a" : pct >= 70 ? (accentCol || "#475569") : pct >= 40 ? "#d97706" : "#dc2626";
-      return `<svg width="${sz}" height="${sz}"><circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="#e2e4ea" stroke-width="${st}"/>
-        <circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="${col}" stroke-width="${st}" stroke-dasharray="${ci}" stroke-dashoffset="${off}" stroke-linecap="round" transform="rotate(-90 ${sz/2} ${sz/2})" style="transition:stroke-dashoffset .8s ease"/>
-        <text x="${sz/2}" y="${sz/2-7}" text-anchor="middle" dominant-baseline="middle" style="font-size:18px;font-weight:700;fill:#0f172a">${pct.toFixed(0)}%</text>
-        <text x="${sz/2}" y="${sz/2+11}" text-anchor="middle" dominant-baseline="middle" style="font-size:9px;fill:#64748b;font-weight:500">${sub}</text></svg>`;
-    }
-    function regTag(reg, total) {
-      if (reg === undefined || reg === null) return "";
-      const full = reg >= total;
-      return `<span class="reg-tag ${full ? 'full' : 'partial'}">${reg}/${total}</span>`;
-    }
-    function regBar(reg, total) {
-      const pct = total > 0 ? Math.min((reg / total) * 100, 100) : 0;
-      const c = pct >= 100 ? "#16a34a" : pct >= 50 ? "#d97706" : "#dc2626";
-      return `<div style="display:flex;align-items:center;gap:8px"><div class="reg-bar" style="flex:1"><div class="reg-bar-fill" style="width:${pct}%;background:${c}"></div></div><span style="font-size:11px;font-weight:600;color:${c}">${pct.toFixed(0)}%</span></div>`;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // KPI CARD
-    // ═══════════════════════════════════════════════════════════════════════
-    function kpi(title, value, subtitle, iconSvg, accent, tCur, tGoal, yoyData) {
-      accent = accent || "#475569";
-      const hasT = tGoal > 0, tP = hasT ? Math.min((tCur / tGoal) * 100, 100) : 0, tC = tP >= 100 ? "#16a34a" : accent;
-      const y = yoyData || { txt: "", cls: "neutral" };
-      return `<div class="kpi-card">
-        <div class="kpi-top"><div>
-          <div class="kpi-title">${title}</div>
-          <div class="kpi-value">${value}</div>
-          ${subtitle ? `<div class="kpi-subtitle">${subtitle}</div>` : ""}
-          ${y.txt ? `<div class="kpi-yoy ${y.cls}">${y.txt}</div>` : ""}
-        </div>
-        ${iconSvg ? `<div class="kpi-icon" style="background:${accent}10;color:${accent}">${iconSvg}</div>` : ""}
-        </div>
-        ${hasT ? `<div class="kpi-target">
-          <div class="kpi-target-label"><span>Target: ${tGoal}</span><span style="font-weight:600;color:${tC}">${tP.toFixed(0)}%</span></div>
-          <div class="kpi-target-bar"><div class="kpi-target-fill" style="width:${tP}%;background:${tC}"></div></div>
-        </div>` : ""}
-      </div>`;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // COLLAPSIBLE SECTION
-    // ═══════════════════════════════════════════════════════════════════════
-    function collSection(title, badge, bodyHTML, openByDefault = true) {
-      return `<div class="section collapsible ${openByDefault ? 'open' : ''}" onclick="if(event.target.closest('.coll-body'))return;this.classList.toggle('open')">
-        <div class="section-header">
-          <h3>${title}</h3>
-          ${badge ? `<span class="section-badge">${badge}</span>` : ""}
-          <span class="coll-chevron">&#9662;</span>
-        </div>
-        <div class="coll-body">${bodyHTML}</div>
-      </div>`;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // BUILD DASHBOARD
-    // ═══════════════════════════════════════════════════════════════════════
-    function build(ev) {
-      if (ev.placeholder) {
-        return `<div class="placeholder-msg"><h2>Coming Soon</h2><p>Data for ${ev.fullName} is not yet connected.<br>The Google Sheet integration will be added when available.</p></div>`;
-      }
-
-      const c = ev.currency;
-      const tblRev = ev.contractTables.reduce((s, t) => s + (t.revenue || 0), 0);
-      const tblSeats = ev.contractTables.reduce((s, t) => s + t.seats, 0);
-      const tblReg = ev.contractTables.reduce((s, t) => s + (t.registered || 0), 0);
-      const ctRev = ev.contractTicketSeats.reduce((s, t) => s + (t.revenue || 0), 0);
-      const ctSeats = ev.contractTicketSeats.reduce((s, t) => s + t.tickets, 0);
-      const ctReg = ev.contractTicketSeats.reduce((s, t) => s + (t.registered || 0), 0);
-      const indRev = ev.maxTickets.reduce((s, t) => s + t.sold * t.price, 0);
-      const indSeats = ev.maxTickets.reduce((s, t) => s + t.sold, 0);
-      const totRev = tblRev + ctRev + indRev;
-      const bePct = ev.breakEvenCost > 0 ? (totRev / ev.breakEvenCost) * 100 : 0;
-      const profit = totRev - ev.breakEvenCost;
-      const nrg = ev.nonRevenueGuests || [], totNR = nrg.reduce((s, g) => s + (g.guests ? g.guests.length : 0), 0);
-      const totPaying = tblSeats + ctSeats + indSeats, totAll = totPaying + totNR;
-      const totReg = tblReg + ctReg + indSeats;
-      const totUnreg = totPaying - totReg;
-      const regPct = totPaying > 0 ? Math.round((totReg / totPaying) * 100) : 0;
-      const st = ev.seatsTarget || {}, ly = ev.lastYear || {};
-      const logi = ev.logistics || [], logiTotal = logi.reduce((s, l) => s + l.guests.length, 0);
-      const th = ev.theme || { bar: ["#334155", "#64748b", "#94a3b8"], accent: "#475569" };
-      const colors = th.bar;
-      const segs = [{ l: "Contract Tables", v: tblRev }, { l: "Contract Tickets", v: ctRev }, { l: "Individual Tickets", v: indRev }];
-
-      // RSVP stats
-      const totalConfirmed = ev.contractTables.reduce((s,t) => s + (t.confirmed||0), 0) +
-        ev.contractTicketSeats.reduce((s,t) => s + (t.confirmed||0), 0) +
-        ev.maxTickets.reduce((s,t) => s + (t.confirmed||0), 0);
-
-      const days = getDaysUntil(ev.date);
-      document.getElementById("countdownMini").innerHTML = `<strong>${days}</strong> days &middot; ${fmtDate(ev.date)}`;
-
-      return `<div class="dash">
-        <!-- 1. HERO -->
-        <div class="hero-row" style="grid-template-columns: 1fr 1fr 1fr;">
-          <div class="hero-card">
-            <div>
-              <div class="hero-label">Total Revenue</div>
-              <div class="hero-value">${fmt(totRev, c)}</div>
-              ${ly.totalRevenue ? `<div class="hero-sub ${yoy(totRev, ly.totalRevenue, true, c).cls}">${yoy(totRev, ly.totalRevenue, true, c).txt}</div>` : ""}
-            </div>
+      <div class="section">
+        <h2>RSVP Status Overview</h2>
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.85rem">
+            <span>Confirmed: ${ev.rsvpCounts.attending}</span>
+            <span>${confPct}</span>
           </div>
-          <div class="hero-card">
-            ${circSVG(bePct, 120, 9, "of break-even", th.accent)}
-            <div>
-              <div class="hero-label">Break-even Target</div>
-              <div class="hero-value" style="font-size:24px">${fmt(ev.breakEvenCost, c)}</div>
-              <div class="hero-sub ${profit >= 0 ? 'positive' : 'negative'}">
-                ${profit >= 0 ? "+" : ""}${fmt(profit, c)} ${profit >= 0 ? "surplus" : "shortfall"}
-              </div>
-            </div>
-          </div>
-          <div class="hero-card">
-            <div>
-              <div class="hero-label">Total Attendees</div>
-              <div class="hero-value">${totAll}</div>
-              <div class="hero-sub" style="color:#64748b">${totPaying} paying &middot; ${totNR} non-revenue</div>
-              <div class="hero-sub" style="color:#16a34a">${totalConfirmed} confirmed (RSVP)</div>
-              ${ly.totalSeats ? `<div class="hero-sub ${yoy(totPaying, ly.totalSeats).cls}">${yoy(totPaying, ly.totalSeats).txt}</div>` : ""}
-            </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${ev.totalGuests ? (ev.rsvpCounts.attending / ev.totalGuests * 100) : 0}%;background:var(--success)"></div>
           </div>
         </div>
+        <table>
+          <thead><tr><th>Status</th><th>Count</th><th>%</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-green">Attending</span></td><td>${ev.rsvpCounts.attending}</td><td>${pct(ev.rsvpCounts.attending, ev.totalGuests)}</td></tr>
+            <tr><td><span class="badge badge-yellow">Pending</span></td><td>${ev.rsvpCounts.pending}</td><td>${pct(ev.rsvpCounts.pending, ev.totalGuests)}</td></tr>
+            <tr><td><span class="badge badge-gray">No RSVP</span></td><td>${ev.rsvpCounts.unknown}</td><td>${pct(ev.rsvpCounts.unknown, ev.totalGuests)}</td></tr>
+            <tr><td><span class="badge badge-red">Declined</span></td><td>${ev.rsvpCounts.declined}</td><td>${pct(ev.rsvpCounts.declined, ev.totalGuests)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-        <!-- 2. REVENUE BREAKDOWN -->
-        <div class="section">
-          <div class="section-header"><h3>Revenue Breakdown</h3></div>
-          <div class="revenue-bar">${segs.map((s, i) => {
-            const p = totRev > 0 ? (s.v / totRev) * 100 : 0;
-            return `<div class="revenue-bar-segment" style="width:${p}%;background:${colors[i]}" title="${s.l}: ${fmt(s.v, c)}"></div>`;
-          }).join("")}</div>
-          <div class="revenue-legend">${segs.map((s, i) => `<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div><span class="legend-label">${s.l}</span><span class="legend-value">${fmt(s.v, c)}</span></div>`).join("")}</div>
-        </div>
-
-        <!-- 3. KPI CARDS -->
-        <div class="row-kpi">
-          ${kpi("Table Seats", tblSeats, fmt(tblRev, c) + " revenue", ICONS.tables, colors[0], tblSeats, st.tables, yoy(tblSeats, ly.tableSeats))}
-          ${kpi("Sponsor Tickets", ctSeats, fmt(ctRev, c) + " revenue", ICONS.ticket, colors[1], ctSeats, st.contractTickets, yoy(ctSeats, ly.contractTicketSeats))}
-          ${kpi("Individual Tickets", indSeats, fmt(indRev, c) + " revenue", ICONS.individual, colors[2], indSeats, st.individualTickets, yoy(indSeats, ly.individualTickets))}
-          ${kpi("Non-Revenue Guests", totNR, nrg.map(g => g.guests.length + " " + g.category.toLowerCase()).join(" &middot; "), ICONS.guests, "#64748b", 0, 0)}
-        </div>
-
-        <!-- 4. REGISTRATION -->
-        <div class="hero-row">
-          <div class="hero-card">
-            <div style="flex:1">
-              <div class="hero-label">Registration Rate</div>
-              <div class="hero-value" style="color:${regPct >= 80 ? '#16a34a' : regPct >= 50 ? '#d97706' : '#dc2626'}">${regPct}%</div>
-              <div class="hero-sub" style="color:#64748b">${totReg} named out of ${totPaying} purchased seats</div>
-              <div style="margin-top:10px">${regBar(totReg, totPaying)}</div>
-            </div>
-          </div>
-          ${totUnreg > 0 ? `<div class="hero-card" style="border-left: 3px solid #d97706;">
-            <div>
-              <div class="hero-label">Pending Registration</div>
-              <div class="hero-value" style="color:#92400e">${totUnreg}</div>
-              <div class="hero-sub" style="color:#64748b">seats purchased, not yet assigned</div>
-              <div style="margin-top:8px;font-size:12px;color:#64748b;line-height:1.6">Tables: ${tblSeats - tblReg} unassigned<br>Sponsor tickets: ${ctSeats - ctReg} unassigned</div>
-            </div>
-          </div>` : `<div class="hero-card" style="border-left: 3px solid #16a34a;">
-            <div>
-              <div class="hero-label">Fully Registered</div>
-              <div class="hero-value" style="color:#16a34a">${totReg}</div>
-              <div class="hero-sub" style="color:#64748b">All paying seats have been assigned</div>
-            </div>
-          </div>`}
-        </div>
-
-        <!-- 5. CONTRACT TABLES -->
-        ${ev.contractTables.length > 0 ? collSection("Contract Tables", `${ev.contractTables.length} sponsors &middot; ${tblSeats} seats &middot; ${tblReg} named`, `
-          <div style="overflow-x:auto"><table>
-            <thead><tr><th>Sponsor</th><th>CS</th><th class="center">Seats</th><th class="center">Named</th><th class="right">Rev / Seat</th><th class="right">Revenue</th><th style="min-width:80px">Share</th><th></th></tr></thead>
-            <tbody>${ev.contractTables.map(t => `<tr>
-              <td class="bold">${t.company}${t.comment === "PENDING" ? ' <span class="pending-tag">PENDING</span>' : ''}</td>
-              <td style="font-size:12px;color:#64748b">${t.cs || '\u2014'}</td>
-              <td class="center">${t.seats}</td>
-              <td class="center">${regTag(t.registered, t.seats)}</td>
-              <td class="right">${fmt(t.revenuePerSeat, c)}</td>
-              <td class="right bold">${fmt(t.revenue, c)}</td>
-              <td>${miniBar(t.revenue, tblRev, colors[0])}</td>
-              <td class="center">${t.confirmed > 0 ? `<span style="font-size:10px;color:#16a34a;font-weight:600">${t.confirmed} RSVP</span>` : ''}</td>
-            </tr>`).join("")}</tbody>
-          </table></div>`, false) : ''}
-
-        <!-- CONTRACT TICKETS -->
-        ${ev.contractTicketSeats.length > 0 ? collSection("Contract Ticket Seats", `${ev.contractTicketSeats.length} sponsors &middot; ${ctSeats} tickets`, `
-          <div style="overflow-x:auto"><table>
-            <thead><tr><th>Organization</th><th class="center">Tickets</th><th class="center">Confirmed</th><th class="right">Rev / Ticket</th><th class="right">Revenue</th><th style="min-width:80px">Share</th></tr></thead>
-            <tbody>${ev.contractTicketSeats.map(t => `<tr>
-              <td class="bold">${t.sponsor}</td>
-              <td class="center">${t.tickets}</td>
-              <td class="center">${t.confirmed > 0 ? `<span style="font-size:11px;color:#16a34a;font-weight:600">${t.confirmed}/${t.tickets}</span>` : `<span style="font-size:11px;color:#94a3b8">0/${t.tickets}</span>`}</td>
-              <td class="right">${fmt(t.revenuePerTicket, c)}</td>
-              <td class="right bold">${fmt(t.revenue, c)}</td>
-              <td>${miniBar(t.revenue, ctRev, colors[1])}</td>
-            </tr>`).join("")}</tbody>
-          </table></div>`, false) : ''}
-
-        <!-- INDIVIDUAL TICKETS -->
-        ${ev.maxTickets.length > 0 ? collSection("Individual Tickets", `${indSeats} sold`, `
-          <div style="overflow-x:auto"><table>
-            <thead><tr><th>Ticket Type</th><th class="center">Sold</th><th class="center">Confirmed</th><th class="right">Price</th><th class="right">Revenue</th><th style="min-width:80px">Share</th></tr></thead>
-            <tbody>${ev.maxTickets.map(t => `<tr>
-              <td class="bold">${t.type}</td>
-              <td class="center">${t.sold}</td>
-              <td class="center">${t.confirmed || 0}/${t.sold}</td>
-              <td class="right">${fmt(t.price, c)}</td>
-              <td class="right bold">${fmt(t.sold * t.price, c)}</td>
-              <td>${miniBar(t.sold * t.price, indRev, colors[2])}</td>
-            </tr>`).join("")}</tbody>
-          </table></div>`, false) : ''}
-
-        <!-- NON-REVENUE GUESTS -->
-        ${nrg.length > 0 ? collSection("Non-Revenue Guests", `${totNR} guests`, `
-          <div class="guest-grid">${nrg.map(g => {
-            const cnt = g.guests.length;
-            const col = g.color || "#64748b";
-            const initials = g.category.split(/[ /]/).filter(Boolean).map(w => w[0]).join("").slice(0,2).toUpperCase();
-            const confirmedInCat = g.guests.filter(p => p.rsvp === "Attending").length;
-            return `<div class="guest-card" onclick="event.stopPropagation();this.classList.toggle('open')">
-              <div class="gc-header">
-                <div class="gc-icon" style="background:${col}">${initials}</div>
-                <div class="gc-info">
-                  <div class="gc-cat">${g.category}</div>
-                  <div class="gc-count">${cnt} <span style="font-size:11px;color:#64748b;font-weight:500">(${confirmedInCat} RSVP)</span></div>
-                </div>
-                <span class="gc-chevron">&#9662;</span>
-              </div>
-              <div class="gc-names"><div class="gc-names-inner"><ul>${g.guests.map(p =>
-                `<li><span><span class="rsvp-dot ${p.rsvp === 'Attending' ? 'yes' : p.rsvp === 'Not attending' ? 'no' : 'unknown'}"></span>${p.name}</span> <span class="org">${p.org}</span></li>`
-              ).join("")}</ul></div></div>
-            </div>`;
-          }).join("")}</div>`, false) : ""}
-
-        <!-- 6. LOGISTICS -->
-        ${logi.length > 0 && logiTotal > 0 ? `
-        <div class="logistics-zone">
-          <div class="section-header"><h3>Logistics &ndash; Transport</h3><span class="section-badge">${logiTotal} confirmed guests</span></div>
-          <div class="logistics-grid">
-            ${logi.filter(l => l.guests.length > 0).map(l => {
-              const ico = TRANSPORT_ICONS[l.mode] || ICONS.question;
+    <!-- SPONSOR TABLES -->
+    <div class="section">
+      <h2>Sponsor Tables (${ev.sponsorTableCount})</h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Sponsor</th><th>CS</th><th>Seats</th><th>Revenue</th><th>Registered</th><th>Confirmed</th><th>Fill Rate</th></tr></thead>
+          <tbody>
+            ${ev.sponsorDetails.map(t => {
+              const fill = t.contract > 0 ? Math.round(t.totalGuests / t.contract * 100) : 0;
+              const fillColor = fill >= 80 ? "var(--success)" : fill >= 50 ? "var(--warning)" : "var(--danger)";
               return `
-              <div class="transport-card" onclick="this.classList.toggle('open')">
-                <div class="tc-header">
-                  <div class="tc-icon">${ico}</div>
-                  <div class="tc-info">
-                    <div class="tc-mode">${l.mode}</div>
-                    <div><span class="tc-count">${l.guests.length}</span><span class="tc-pct">${logiTotal > 0 ? Math.round((l.guests.length / logiTotal) * 100) : 0}%</span></div>
-                  </div>
-                  <span class="tc-chevron">&#9662;</span>
-                </div>
-                <div class="tc-names"><div class="tc-names-inner"><ul>${l.guests.map(g => `<li>${g.name} <span class="org">${g.org}</span></li>`).join("")}</ul></div></div>
-              </div>`;
+                <tr>
+                  <td><strong>${t.name}</strong></td>
+                  <td>${t.cs || "—"}</td>
+                  <td>${t.contract}</td>
+                  <td>${fmt(t.revenue)}</td>
+                  <td>${t.registered} / ${t.totalGuests}</td>
+                  <td>${t.confirmed}</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div class="progress-bar" style="width:80px">
+                        <div class="progress-fill" style="width:${Math.min(fill, 100)}%;background:${fillColor}"></div>
+                      </div>
+                      <span style="font-size:0.8rem;color:${fillColor}">${fill}%</span>
+                    </div>
+                  </td>
+                </tr>
+              `;
             }).join("")}
-          </div>
-        </div>` : ""}
+            <tr style="font-weight:700;background:#f1f5f9">
+              <td>TOTAL</td>
+              <td></td>
+              <td>${ev.totalTableSeats}</td>
+              <td>${fmt(ev.tableRevenue)}</td>
+              <td>${ev.sponsorDetails.reduce((s,t)=>s+t.registered,0)} / ${ev.sponsorDetails.reduce((s,t)=>s+t.totalGuests,0)}</td>
+              <td>${ev.sponsorDetails.reduce((s,t)=>s+t.confirmed,0)}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2025 vs 2026 COMPARISON -->
+    ${ev.summaryRows && ev.summaryRows.length > 0 ? `
+    <div class="section">
+      <h2>2025 vs 2026 Comparison</h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Category</th><th>Quota 2025</th><th>Attended 2025</th><th>Quota 2026</th><th>Registered 2026</th><th>Confirmed 2026</th><th>Revenue 2026</th></tr></thead>
+          <tbody>
+            ${ev.summaryRows.map(r => `
+              <tr>
+                <td><strong>${r["Category"]}</strong></td>
+                <td>${r["Quota 2025"] ?? "—"}</td>
+                <td>${r["Attended 2025"] ?? "—"}</td>
+                <td>${r["Quota 2026"] ?? "—"}</td>
+                <td>${r["Registered names"] ?? "—"}</td>
+                <td>${r["Confirmed"] ?? "—"}</td>
+                <td>${r["Revenue"] != null ? fmt(r["Revenue"]) : "—"}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    ` : ""}
+  `;
+}
+
+function switchEvent(key) {
+  activeEvent = key;
+  render();
+}
+
+// ── LOAD ──
+async function loadAndRender() {
+  try {
+    const [ag, st, su] = await Promise.all([
+      fetchSheet("ALL GUESTS", 1),
+      fetchSheet("SPONSOR TABLES", 1),
+      fetchSheet("SUMMARY", 2),
+    ]);
+    EVENTS = processData(ag, st, su);
+    lastRefresh = new Date();
+    render();
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    document.getElementById("app").innerHTML = `
+      <div class="error-box">
+        <strong>Failed to load data</strong><br>
+        ${err.message}<br><br>
+        <small>Make sure the Google Sheet is shared as "Anyone with the link" → Viewer.<br>
+        This dashboard must be served over HTTPS (e.g. GitHub Pages), not opened as a local file.</small>
       </div>`;
-    }
+  }
+}
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // RENDER
-    // ═══════════════════════════════════════════════════════════════════════
-    function render() {
-      const ev = EVENTS[activeTab];
-      if (!ev) return;
-      const th = ev.theme || {};
-      const root = document.documentElement;
-      root.style.setProperty("--hdr-from", th.from || "#0a1628");
-      root.style.setProperty("--hdr-to", th.to || "#162a4a");
-      root.style.setProperty("--accent", th.accent || "#3b82f6");
-      root.style.setProperty("--accent-light", th.accentLight || "#dbeafe");
-      root.style.setProperty("--accent-text", th.accentText || "#1e40af");
-
-      const logoEl = document.getElementById("eventLogo");
-      if (ev.logo) { logoEl.src = ev.logo; logoEl.style.display = ""; logoEl.style.filter = ev.logoFilter || "none"; }
-      else { logoEl.style.display = "none"; }
-
-      const now = new Date();
-      document.getElementById("lastUpdated").textContent = "Updated: " + now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-
-      const tabsEl = document.getElementById("tabs");
-      tabsEl.innerHTML = Object.keys(EVENTS).map(k => `<button class="tab-btn ${k === activeTab ? 'active' : ''}" data-tab="${k}">${EVENTS[k].fullName}<span class="badge">${EVENTS[k].name}</span></button>`).join("");
-      tabsEl.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => { activeTab = b.dataset.tab; render(); }));
-      document.getElementById("content").innerHTML = build(ev);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // INIT & REFRESH
-    // ═══════════════════════════════════════════════════════════════════════
-    async function loadAndRender() {
-      try {
-        const [ag, st, su] = await Promise.all([
-          fetchSheet("ALL GUESTS"),
-          fetchSheet("SPONSOR TABLES"),
-          fetchSheet("SUMMARY"),
-        ]);
-        EVENTS = processData(ag, st, su);
-        lastRefresh = new Date();
-        render();
-      } catch (err) {
-        console.error("Fetch error:", err);
-        document.getElementById("content").innerHTML = `
-          <div class="error-box">
-            <h3>Unable to load data</h3>
-            <p>Could not fetch data from Google Sheets. Make sure the sheet is shared with <strong>"Anyone with the link"</strong> (View access).</p>
-            <p style="margin-top:8px;font-size:11px;color:#64748b">Error: ${err.message}</p>
-            <button onclick="loadAndRender()" style="margin-top:16px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;">Retry</button>
-          </div>`;
-      }
-    }
-
-    async function manualRefresh() {
-      const btn = document.getElementById("refreshBtn");
-      btn.classList.add("refreshing");
-      btn.textContent = "Refreshing...";
-      await loadAndRender();
-      btn.classList.remove("refreshing");
-      btn.innerHTML = "&#8635; Refresh";
-    }
-
-    // Start
-    loadAndRender();
-    setInterval(loadAndRender, CONFIG.refreshMs);
-  </script>
+loadAndRender();
+setInterval(loadAndRender, CONFIG.refreshMs);
+</script>
 </body>
 </html>
