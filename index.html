@@ -4,91 +4,171 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VIP Dinner Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary: #1a3a5c;
-    --accent: #2563eb;
-    --accent-light: #dbeafe;
-    --success: #059669;
-    --warning: #d97706;
-    --danger: #dc2626;
-    --bg: #f8fafc;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --bg: #f8f9fb;
     --card: #ffffff;
-    --text: #1e293b;
-    --muted: #64748b;
-    --border: #e2e8f0;
-    --radius: 12px;
+    --text: #111827;
+    --muted: #6b7280;
+    --light: #9ca3af;
+    --border: #f3f4f6;
+    --border2: #e5e7eb;
+    --indigo: #6366f1;
+    --purple: #8b5cf6;
+    --violet-light: #ede9fe;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --radius: 14px;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:var(--bg); color:var(--text); }
+  body { font-family:var(--font); background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
 
   /* Header */
-  .header { background:var(--primary); color:#fff; padding:20px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
-  .header h1 { font-size:1.5rem; font-weight:700; }
-  .header-meta { display:flex; gap:16px; align-items:center; font-size:0.85rem; opacity:0.85; }
+  .header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+    padding: 28px 36px 0;
+    color: #fff;
+  }
+  .header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .header h1 { font-size:24px; font-weight:800; letter-spacing:-0.5px; }
+  .header-sub { font-size:13px; opacity:0.7; margin-top:4px; }
+  .header-meta { font-size:12px; opacity:0.6; }
 
-  /* Event tabs */
-  .tabs { display:flex; gap:8px; padding:16px 32px; background:#fff; border-bottom:1px solid var(--border); }
-  .tab { padding:8px 20px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; font-size:0.9rem; font-weight:500; transition:all .2s; }
-  .tab:hover { background:var(--accent-light); }
-  .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  /* Tabs */
+  .tabs { display:flex; gap:4px; }
+  .tab {
+    padding:10px 28px; font-size:14px; font-weight:600;
+    border:none; border-radius:10px 10px 0 0; cursor:pointer;
+    transition:all .2s; background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7);
+    font-family:var(--font);
+  }
+  .tab:hover { background:rgba(255,255,255,0.18); }
+  .tab.active { background:var(--bg); color:var(--text); }
+  .tab-badge {
+    margin-left:8px; font-size:11px; padding:2px 8px; border-radius:12px;
+    background:rgba(255,255,255,0.15); color:rgba(255,255,255,0.8);
+  }
+  .tab.active .tab-badge { background:var(--violet-light); color:var(--indigo); }
 
-  /* Main layout */
-  .main { max-width:1400px; margin:0 auto; padding:24px 32px; }
+  /* Main */
+  .main { max-width:1100px; margin:0 auto; padding:24px 36px 40px; }
+  .main > * + * { margin-top:20px; }
 
-  /* KPI row */
-  .kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
-  .kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
-  .kpi-label { font-size:0.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
-  .kpi-value { font-size:1.8rem; font-weight:700; }
-  .kpi-sub { font-size:0.8rem; color:var(--muted); margin-top:4px; }
-  .kpi-value.green { color:var(--success); }
-  .kpi-value.blue { color:var(--accent); }
-  .kpi-value.orange { color:var(--warning); }
+  /* Grid helpers */
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .kpi-row { display:flex; gap:16px; flex-wrap:wrap; }
+  @media (max-width:800px) { .grid-2 { grid-template-columns:1fr; } .kpi-row { flex-direction:column; } }
+
+  /* Countdown */
+  .countdown {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius:16px; padding:20px 28px; color:#fff;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .countdown-label { font-size:13px; opacity:0.85; margin-bottom:2px; }
+  .countdown-date { font-size:11px; opacity:0.7; }
+  .countdown-num { font-size:42px; font-weight:800; line-height:1; }
+  .countdown-unit { font-size:14px; opacity:0.8; margin-left:4px; }
+
+  /* Break-even box */
+  .breakeven-box {
+    background:var(--card); border-radius:var(--radius); padding:18px 22px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; gap:32px;
+  }
+  .be-label { font-size:12px; color:var(--light); text-transform:uppercase; letter-spacing:0.5px; }
+  .be-value { font-size:22px; font-weight:700; }
+  .be-profit { font-size:13px; font-weight:600; display:flex; align-items:center; gap:4px; margin-top:4px; }
+
+  /* KPI card */
+  .kpi {
+    background:var(--card); border-radius:var(--radius); padding:18px 22px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border);
+    flex:1; min-width:160px;
+  }
+  .kpi-top { display:flex; justify-content:space-between; align-items:start; }
+  .kpi-title { font-size:12px; color:var(--light); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+  .kpi-val { font-size:26px; font-weight:700; }
+  .kpi-sub { font-size:12px; color:var(--muted); margin-top:4px; }
+  .kpi-icon {
+    width:38px; height:38px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .kpi-icon svg { width:20px; height:20px; }
 
   /* Section */
-  .section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px; }
-  .section h2 { font-size:1.1rem; font-weight:600; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  .section {
+    background:var(--card); border-radius:var(--radius); padding:22px 26px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border);
+  }
+  .section-head { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .section h3 { font-size:16px; font-weight:700; }
+  .section-badge { font-size:11px; background:var(--violet-light); color:var(--indigo); padding:2px 10px; border-radius:20px; font-weight:600; }
 
   /* Table */
-  table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-  th { text-align:left; padding:10px 12px; background:#f1f5f9; font-weight:600; color:var(--muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
-  td { padding:10px 12px; border-top:1px solid var(--border); }
-  tr:hover td { background:#f8fafc; }
+  table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+  th {
+    text-align:left; padding:10px 14px; background:#f9fafb; color:var(--muted);
+    font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;
+    border-bottom:1px solid var(--border2); white-space:nowrap;
+  }
+  th.r { text-align:right; }
+  th.c { text-align:center; }
+  td { padding:10px 14px; border-bottom:1px solid var(--border); color:#374151; }
+  td.r { text-align:right; }
+  td.c { text-align:center; }
+  td.b { font-weight:600; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  tr.total-row td { font-weight:700; background:#f1f5f9 !important; }
 
-  /* Status badges */
-  .badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.75rem; font-weight:500; }
+  /* Progress / mini bar */
+  .minibar { height:8px; border-radius:4px; background:#e5e7eb; width:100%; }
+  .minibar-fill { height:100%; border-radius:4px; transition:width 0.6s ease; }
+
+  /* Revenue breakdown bar */
+  .rev-bar { display:flex; height:18px; border-radius:9px; overflow:hidden; background:#e5e7eb; }
+  .rev-bar-seg { transition:width 0.6s ease; min-width:0; }
+  .rev-legend { display:flex; gap:20px; margin-top:10px; flex-wrap:wrap; }
+  .rev-legend-item { display:flex; align-items:center; gap:6px; font-size:12px; }
+  .rev-dot { width:10px; height:10px; border-radius:3px; }
+
+  /* Badges */
+  .badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:12px; font-weight:500; }
   .badge-green { background:#dcfce7; color:#166534; }
   .badge-yellow { background:#fef9c3; color:#854d0e; }
   .badge-red { background:#fee2e2; color:#991b1b; }
   .badge-gray { background:#f1f5f9; color:#475569; }
 
-  /* Progress bar */
-  .progress-bar { height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden; }
-  .progress-fill { height:100%; border-radius:99px; transition:width .5s; }
-
-  /* Grid 2 cols */
-  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  @media (max-width:900px) { .grid-2 { grid-template-columns:1fr; } }
+  /* RSVP progress */
+  .rsvp-prog { margin-bottom:16px; }
+  .rsvp-prog-top { display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; }
 
   /* Loading / Error */
-  .loading { text-align:center; padding:60px 20px; color:var(--muted); }
-  .loading .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+  .loading { text-align:center; padding:80px 20px; color:var(--muted); }
+  .spinner { width:40px; height:40px; border:3px solid var(--border2); border-top-color:var(--indigo); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
   @keyframes spin { to { transform:rotate(360deg); } }
-  .error-box { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:16px; border-radius:var(--radius); text-align:center; margin:24px 0; }
+  .error-box { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:20px; border-radius:var(--radius); text-align:center; }
+
+  .coming-soon { text-align:center; padding:80px 20px; color:var(--muted); }
+  .coming-soon svg { margin-bottom:16px; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>VIP Dinner Dashboard</h1>
-  <div class="header-meta">
-    <span id="lastRefresh">Loading...</span>
-    <span>Auto-refresh: 3 min</span>
+  <div class="header-top">
+    <div>
+      <h1>VIP Dinner Revenue Dashboard</h1>
+      <div class="header-sub">Track revenue, break-even progress &amp; guest management</div>
+    </div>
+    <div class="header-meta" id="lastRefresh">Loading...</div>
   </div>
+  <div class="tabs" id="tabs"></div>
 </div>
 
-<div class="tabs" id="tabs"></div>
 <div class="main" id="app">
   <div class="loading"><div class="spinner"></div>Loading data from Google Sheets...</div>
 </div>
@@ -98,15 +178,25 @@
 const CONFIG = {
   sheetId: "1IuDnVMB4SwjA-6Ei-j_Af4JExCUUKDhHsy4LjkrbO1s",
   refreshMs: 180000,
+  breakEvenCost: 50000,
   events: [
-    { key: "pbw", label: "PBW 2026 — April 14", color: "#2563eb" },
-    { key: "raise", label: "RAISE Summit — July 8-9", color: "#7c3aed" }
+    { key: "pbw", label: "Paris Blockchain Week", short: "PBW", date: "2026-04-14", color: "#6366f1" },
+    { key: "raise", label: "RAISE Summit", short: "RAISE", date: "2026-07-08", color: "#7c3aed" }
   ]
 };
 
 let EVENTS = {};
 let activeEvent = "pbw";
 let lastRefresh = null;
+
+// ── SVG ICONS ──
+const ICONS = {
+  revenue: `<svg fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>`,
+  table: `<svg fill="none" stroke="#6366f1" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`,
+  ticket: `<svg fill="none" stroke="#8b5cf6" stroke-width="2" viewBox="0 0 24 24"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v1a3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3v-1a3 3 0 01-3-3z"/></svg>`,
+  person: `<svg fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  shuttle: `<svg fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 01-2-2V7a4 4 0 014-4h10a4 4 0 014 4v8a2 2 0 01-2 2M5 17l-1 4h1m14-4l1 4h-1M9 17v4m6-4v4"/></svg>`,
+};
 
 // ── FETCH with headers param ──
 async function fetchSheet(name, headerRows = 1) {
@@ -117,42 +207,64 @@ async function fetchSheet(name, headerRows = 1) {
   const m = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\)/);
   if (!m) throw new Error("Invalid response from Google Sheets");
   const tbl = JSON.parse(m[1]).table;
-
-  // Use cols[i].label as column headers (properly populated with headers=1+)
   const headers = tbl.cols.map((c, i) => {
     const lbl = (c.label || "").trim();
     return lbl || `col_${i}`;
   });
-
-  // Convert rows to objects
   return tbl.rows.map(r => {
     const obj = {};
     headers.forEach((h, i) => {
       const cell = (r.c && r.c[i]) ? r.c[i] : null;
       if (!cell) { obj[h] = null; return; }
-      // Prefer .v (value), fall back to .f (formatted)
       obj[h] = (cell.v !== undefined && cell.v !== null) ? cell.v : (cell.f || null);
     });
     return obj;
   }).filter(obj => Object.values(obj).some(v => v !== null && v !== ""));
 }
 
-// ── Org name normalization ──
-function normOrg(name) {
-  return (name || "").toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+// ── Helpers ──
+function normOrg(name) { return (name || "").toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, ""); }
+function fmt(n) { return n != null ? "€" + Math.round(n).toLocaleString("fr-FR") : "—"; }
+function pct(n, d) { return d ? Math.round(n / d * 100) + "%" : "—"; }
+
+function getDaysUntil(dateStr) {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const target = new Date(dateStr + "T00:00:00");
+  return Math.max(0, Math.ceil((target - now) / 86400000));
+}
+
+function miniBar(value, max, color = "#6366f1") {
+  const p = max > 0 ? Math.min(value / max * 100, 100) : 0;
+  return `<div class="minibar"><div class="minibar-fill" style="width:${p}%;background:${color}"></div></div>`;
+}
+
+// ── Circular SVG progress ──
+function circularProgress(pct, size = 140, stroke = 10) {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const clamped = Math.min(pct, 100);
+  const offset = circ - (clamped / 100) * circ;
+  const color = pct >= 100 ? "#10b981" : pct >= 70 ? "#6366f1" : pct >= 40 ? "#f59e0b" : "#ef4444";
+  return `<svg width="${size}" height="${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="${stroke}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
+      stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"
+      transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset 0.8s ease"/>
+    <text x="${size/2}" y="${size/2 - 8}" text-anchor="middle" dominant-baseline="middle"
+      style="font-size:22px;font-weight:700;fill:#111827">${Math.round(pct)}%</text>
+    <text x="${size/2}" y="${size/2 + 14}" text-anchor="middle" dominant-baseline="middle"
+      style="font-size:11px;fill:#6b7280">of break-even</text>
+  </svg>`;
 }
 
 // ── PROCESS DATA ──
 function processData(allGuests, sponsorTables, summary) {
-  // --- PBW event ---
   const ag = allGuests.filter(r => r["REGISTRANT TYPE"]);
-
-  // Sponsor tables data
   const tables = sponsorTables.filter(r => r["SPONSOR'S TABLES"]);
   const totalTableRevenue = tables.reduce((s, r) => s + (parseFloat(r["TABLE REVENUE"]) || 0), 0);
   const totalTableSeats = tables.reduce((s, r) => s + (parseFloat(r["CONTRACT"]) || 0), 0);
 
-  // By registrant type
+  // By type
   const byType = {};
   ag.forEach(r => {
     const t = r["REGISTRANT TYPE"];
@@ -165,227 +277,236 @@ function processData(allGuests, sponsorTables, summary) {
     if ((r["SHUTTLE"] || "").toString().toLowerCase() === "yes") byType[t].shuttle++;
   });
 
-  // Ticket revenue (contract tickets + individual tickets)
   const ticketRevenue = (byType["Contract ticket"]?.amount || 0) + (byType["Ticket"]?.amount || 0);
   const totalRevenue = ticketRevenue + totalTableRevenue;
 
-  // RSVP counts across all guests
-  const rsvpCounts = { attending: 0, pending: 0, declined: 0, unknown: 0 };
+  // RSVP
+  const rsvp = { attending: 0, pending: 0, declined: 0, unknown: 0 };
   ag.forEach(r => {
     const s = (r["RSVP STATUS"] || "").toLowerCase().trim();
-    if (s === "attending" || s === "confirmed") rsvpCounts.attending++;
-    else if (s === "declined" || s === "cancelled") rsvpCounts.declined++;
-    else if (s === "" || !s) rsvpCounts.unknown++;
-    else rsvpCounts.pending++;
+    if (s === "attending" || s === "confirmed") rsvp.attending++;
+    else if (s === "declined" || s === "cancelled") rsvp.declined++;
+    else if (!s) rsvp.unknown++;
+    else rsvp.pending++;
   });
 
-  // Build sponsor table details with org matching
+  // Sponsor details
   const sponsorDetails = tables.map(t => {
     const orgName = t["SPONSOR'S TABLES"] || "";
     const normName = normOrg(orgName);
-    // Find matching guests from ALL GUESTS
-    const matchingGuests = ag.filter(g =>
-      (g["REGISTRANT TYPE"] === "Contract table") && normOrg(g["ORGANIZATION"]) === normName
-    );
-    const registeredGuests = matchingGuests.filter(g => g["FULL NAME"] && String(g["FULL NAME"]).trim());
-    const confirmedGuests = matchingGuests.filter(g => {
-      const s = (g["RSVP STATUS"] || "").toLowerCase();
-      return s === "attending" || s === "confirmed";
-    });
-
+    const matchGuests = ag.filter(g => g["REGISTRANT TYPE"] === "Contract table" && normOrg(g["ORGANIZATION"]) === normName);
+    const regGuests = matchGuests.filter(g => g["FULL NAME"] && String(g["FULL NAME"]).trim());
+    const confGuests = matchGuests.filter(g => { const s = (g["RSVP STATUS"]||"").toLowerCase(); return s === "attending" || s === "confirmed"; });
     return {
-      cs: t["CS"] || "",
-      name: orgName,
+      cs: t["CS"] || "", name: orgName,
       contract: parseFloat(t["CONTRACT"]) || 0,
       revenue: parseFloat(t["TABLE REVENUE"]) || 0,
-      totalGuests: matchingGuests.length,
-      registered: registeredGuests.length,
-      confirmed: confirmedGuests.length,
-      remaining: parseFloat(t["REMAINING SEATS"]) || (parseFloat(t["CONTRACT"]) || 0) - matchingGuests.length,
-      effectiveConfirmed: parseFloat(t["EFFECTIVE GUESTS WHO CONFIRMED"]) || confirmedGuests.length
+      totalGuests: matchGuests.length, registered: regGuests.length, confirmed: confGuests.length,
     };
   });
 
-  // Summary data (2025 vs 2026)
-  const summaryTotal = summary.find(r => (r["Category"] || "").toLowerCase() === "total");
-
-  // Shuttle count
   const shuttleCount = ag.filter(r => (r["SHUTTLE"] || "").toString().toLowerCase() === "yes").length;
+  const summaryTotal = summary.find(r => (r["Category"] || "").toLowerCase() === "total");
+  const summaryRows = summary.filter(r => r["Category"] && !["total","coe staff (seated)"].includes((r["Category"]||"").toLowerCase()));
 
-  const pbw = {
-    key: "pbw",
-    totalRevenue,
-    ticketRevenue,
-    tableRevenue: totalTableRevenue,
-    totalGuests: ag.length,
-    registeredGuests: ag.filter(r => r["FULL NAME"] && String(r["FULL NAME"]).trim()).length,
-    totalTableSeats,
-    sponsorTableCount: tables.length,
-    byType,
-    rsvpCounts,
-    sponsorDetails,
-    shuttleCount,
-    summary: summaryTotal ? {
-      quota2026: parseFloat(summaryTotal["Quota 2026"]) || 0,
-      registered2026: parseFloat(summaryTotal["Registered names"]) || 0,
-      confirmed2026: parseFloat(summaryTotal["Confirmed"]) || 0,
-      revenue2026: parseFloat(summaryTotal["Revenue"]) || 0,
-      attended2025: parseFloat(summaryTotal["Attended 2025"]) || 0,
-      quota2025: parseFloat(summaryTotal["Quota 2025"]) || 0,
-    } : null,
-    summaryRows: summary.filter(r => r["Category"] && (r["Category"] || "").toLowerCase() !== "total" && (r["Category"] || "").toLowerCase() !== "coe staff (seated)")
+  return {
+    pbw: {
+      totalRevenue, ticketRevenue, tableRevenue: totalTableRevenue,
+      totalGuests: ag.length,
+      registeredGuests: ag.filter(r => r["FULL NAME"] && String(r["FULL NAME"]).trim()).length,
+      totalTableSeats, sponsorTableCount: tables.length,
+      byType, rsvp, sponsorDetails, shuttleCount,
+      summary: summaryTotal ? {
+        quota2026: parseFloat(summaryTotal["Quota 2026"]) || 0,
+        registered2026: parseFloat(summaryTotal["Registered names"]) || 0,
+        confirmed2026: parseFloat(summaryTotal["Confirmed"]) || 0,
+        revenue2026: parseFloat(summaryTotal["Revenue"]) || 0,
+        attended2025: parseFloat(summaryTotal["Attended 2025"]) || 0,
+      } : null,
+      summaryRows,
+    },
+    raise: null,
   };
-
-  return { pbw, raise: null };
-}
-
-// ── FORMAT HELPERS ──
-function fmt(n) { return n != null ? "€" + Math.round(n).toLocaleString("fr-FR") : "—"; }
-function pct(n, d) { return d ? Math.round(n / d * 100) + "%" : "—"; }
-function rsvpBadge(status) {
-  const s = (status || "").toLowerCase().trim();
-  if (s === "attending" || s === "confirmed") return `<span class="badge badge-green">Attending</span>`;
-  if (s === "declined" || s === "cancelled") return `<span class="badge badge-red">Declined</span>`;
-  if (s === "" || !s) return `<span class="badge badge-gray">No RSVP</span>`;
-  return `<span class="badge badge-yellow">${status}</span>`;
 }
 
 // ── RENDER ──
 function render() {
-  // Update refresh time
   if (lastRefresh) {
-    document.getElementById("lastRefresh").textContent = "Updated: " + lastRefresh.toLocaleTimeString();
+    document.getElementById("lastRefresh").textContent =
+      "Last updated: " + lastRefresh.toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" }) +
+      " " + lastRefresh.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
   }
 
   // Tabs
-  const tabsEl = document.getElementById("tabs");
-  tabsEl.innerHTML = CONFIG.events.map(e =>
-    `<button class="tab ${activeEvent === e.key ? 'active' : ''}" onclick="switchEvent('${e.key}')" style="${activeEvent === e.key ? `background:${e.color};border-color:${e.color}` : ''}">${e.label}</button>`
+  document.getElementById("tabs").innerHTML = CONFIG.events.map(e =>
+    `<button class="tab ${activeEvent === e.key ? 'active' : ''}" onclick="switchEvent('${e.key}')">
+      ${e.label}<span class="tab-badge">${e.short}</span>
+    </button>`
   ).join("");
 
   const app = document.getElementById("app");
   const ev = EVENTS[activeEvent];
+  const evCfg = CONFIG.events.find(e => e.key === activeEvent);
 
   if (!ev) {
-    app.innerHTML = `<div class="section" style="text-align:center;padding:60px 20px;color:var(--muted)">
-      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:16px"><path d="M12 6v6l4 2M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
+    app.innerHTML = `<div class="coming-soon">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 6v6l4 2M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
       <h3 style="margin-bottom:8px">Coming Soon</h3>
       <p>Data for this event will be available when registration opens.</p>
     </div>`;
     return;
   }
 
-  const regPct = ev.summary ? pct(ev.summary.registered2026, ev.summary.quota2026) : pct(ev.registeredGuests, ev.totalGuests);
-  const confPct = pct(ev.rsvpCounts.attending, ev.totalGuests);
+  const days = getDaysUntil(evCfg.date);
+  const dateStr = new Date(evCfg.date).toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
+  const bePct = CONFIG.breakEvenCost > 0 ? (ev.totalRevenue / CONFIG.breakEvenCost) * 100 : 0;
+  const profit = ev.totalRevenue - CONFIG.breakEvenCost;
+  const confPct = ev.totalGuests ? Math.round(ev.rsvp.attending / ev.totalGuests * 100) : 0;
 
   app.innerHTML = `
-    <!-- KPI ROW -->
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="kpi-label">Total Revenue</div>
-        <div class="kpi-value green">${fmt(ev.totalRevenue)}</div>
-        <div class="kpi-sub">Tables: ${fmt(ev.tableRevenue)} · Tickets: ${fmt(ev.ticketRevenue)}</div>
+    <!-- Row 1: Countdown + Break-even -->
+    <div class="grid-2">
+      <div class="countdown">
+        <div>
+          <div class="countdown-label">Days until VIP Dinner ${evCfg.short}</div>
+          <div class="countdown-date">${dateStr}</div>
+        </div>
+        <div style="display:flex;align-items:baseline">
+          <span class="countdown-num">${days}</span>
+          <span class="countdown-unit">days</span>
+        </div>
       </div>
-      <div class="kpi">
-        <div class="kpi-label">Total Guests</div>
-        <div class="kpi-value blue">${ev.totalGuests}</div>
-        <div class="kpi-sub">Registered: ${ev.registeredGuests} · Quota: ${ev.summary?.quota2026 || "—"}</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Sponsor Tables</div>
-        <div class="kpi-value">${ev.sponsorTableCount}</div>
-        <div class="kpi-sub">${ev.totalTableSeats} contracted seats</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">RSVP Confirmed</div>
-        <div class="kpi-value green">${ev.rsvpCounts.attending}</div>
-        <div class="kpi-sub">${confPct} of total · Declined: ${ev.rsvpCounts.declined}</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Shuttle Requests</div>
-        <div class="kpi-value orange">${ev.shuttleCount}</div>
-        <div class="kpi-sub">Guests requesting transport</div>
+      <div class="breakeven-box">
+        ${circularProgress(bePct)}
+        <div>
+          <div class="be-label">Break-even target</div>
+          <div class="be-value">${fmt(CONFIG.breakEvenCost)}</div>
+          <div class="be-profit" style="color:${profit >= 0 ? 'var(--green)' : 'var(--red)'}">
+            ${profit >= 0 ? '▲' : '▼'} ${profit >= 0 ? '+' : ''}${fmt(profit)} ${profit >= 0 ? 'profit' : 'shortfall'}
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- BREAKDOWN + RSVP -->
+    <!-- KPI Row -->
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-top">
+          <div>
+            <div class="kpi-title">Total Revenue</div>
+            <div class="kpi-val" style="color:var(--green)">${fmt(ev.totalRevenue)}</div>
+            <div class="kpi-sub">Tables ${fmt(ev.tableRevenue)} · Tickets ${fmt(ev.ticketRevenue)}</div>
+          </div>
+          <div class="kpi-icon" style="background:#10b98115">${ICONS.revenue}</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top">
+          <div>
+            <div class="kpi-title">Sponsor Tables</div>
+            <div class="kpi-val">${ev.sponsorTableCount}</div>
+            <div class="kpi-sub">${ev.totalTableSeats} contracted seats</div>
+          </div>
+          <div class="kpi-icon" style="background:#6366f115">${ICONS.table}</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top">
+          <div>
+            <div class="kpi-title">Total Guests</div>
+            <div class="kpi-val">${ev.totalGuests}</div>
+            <div class="kpi-sub">Registered: ${ev.registeredGuests} · Quota: ${ev.summary?.quota2026 || "—"}</div>
+          </div>
+          <div class="kpi-icon" style="background:#f59e0b15">${ICONS.person}</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top">
+          <div>
+            <div class="kpi-title">Shuttle Requests</div>
+            <div class="kpi-val" style="color:var(--amber)">${ev.shuttleCount}</div>
+            <div class="kpi-sub">Guests requesting transport</div>
+          </div>
+          <div class="kpi-icon" style="background:#ef444415">${ICONS.shuttle}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Breakdown -->
+    <div class="section">
+      <div class="section-head"><h3>Revenue Breakdown</h3></div>
+      <div class="rev-bar">
+        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? ev.tableRevenue / ev.totalRevenue * 100 : 0}%;background:#6366f1"></div>
+        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? (byType_amount('Contract ticket', ev) / ev.totalRevenue * 100) : 0}%;background:#8b5cf6"></div>
+        <div class="rev-bar-seg" style="width:${ev.totalRevenue > 0 ? (byType_amount('Ticket', ev) / ev.totalRevenue * 100) : 0}%;background:#a78bfa"></div>
+      </div>
+      <div class="rev-legend">
+        <div class="rev-legend-item"><div class="rev-dot" style="background:#6366f1"></div><span style="color:var(--muted)">Contract Tables</span><span style="font-weight:600">${fmt(ev.tableRevenue)}</span></div>
+        <div class="rev-legend-item"><div class="rev-dot" style="background:#8b5cf6"></div><span style="color:var(--muted)">Contract Tickets</span><span style="font-weight:600">${fmt(ev.byType["Contract ticket"]?.amount || 0)}</span></div>
+        <div class="rev-legend-item"><div class="rev-dot" style="background:#a78bfa"></div><span style="color:var(--muted)">Individual Tickets</span><span style="font-weight:600">${fmt(ev.byType["Ticket"]?.amount || 0)}</span></div>
+      </div>
+    </div>
+
+    <!-- RSVP + Guest Breakdown -->
     <div class="grid-2">
       <div class="section">
-        <h2>Guest Breakdown by Type</h2>
+        <div class="section-head"><h3>RSVP Status</h3><span class="section-badge">${ev.rsvp.attending} confirmed</span></div>
+        <div class="rsvp-prog">
+          <div class="rsvp-prog-top"><span>Confirmed</span><span>${confPct}%</span></div>
+          <div class="minibar" style="height:12px;border-radius:6px"><div class="minibar-fill" style="width:${confPct}%;background:var(--green);border-radius:6px"></div></div>
+        </div>
         <table>
-          <thead><tr><th>Type</th><th>Total</th><th>Registered</th><th>Revenue</th></tr></thead>
+          <thead><tr><th>Status</th><th class="c">Count</th><th class="r">%</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-green">Attending</span></td><td class="c">${ev.rsvp.attending}</td><td class="r">${pct(ev.rsvp.attending, ev.totalGuests)}</td></tr>
+            <tr><td><span class="badge badge-yellow">Pending</span></td><td class="c">${ev.rsvp.pending}</td><td class="r">${pct(ev.rsvp.pending, ev.totalGuests)}</td></tr>
+            <tr><td><span class="badge badge-gray">No RSVP</span></td><td class="c">${ev.rsvp.unknown}</td><td class="r">${pct(ev.rsvp.unknown, ev.totalGuests)}</td></tr>
+            <tr><td><span class="badge badge-red">Declined</span></td><td class="c">${ev.rsvp.declined}</td><td class="r">${pct(ev.rsvp.declined, ev.totalGuests)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Guest Breakdown by Type</h3></div>
+        <table>
+          <thead><tr><th>Type</th><th class="c">Total</th><th class="c">Registered</th><th class="r">Revenue</th></tr></thead>
           <tbody>
             ${Object.entries(ev.byType).map(([type, d]) => `
-              <tr>
-                <td><strong>${type}</strong></td>
-                <td>${d.count}</td>
-                <td>${d.registered}</td>
-                <td>${d.amount > 0 ? fmt(d.amount) : '<span style="color:var(--muted)">—</span>'}</td>
-              </tr>
+              <tr><td class="b">${type}</td><td class="c">${d.count}</td><td class="c">${d.registered}</td><td class="r">${d.amount > 0 ? fmt(d.amount) : '<span style="color:var(--light)">—</span>'}</td></tr>
             `).join("")}
           </tbody>
         </table>
       </div>
-
-      <div class="section">
-        <h2>RSVP Status Overview</h2>
-        <div style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.85rem">
-            <span>Confirmed: ${ev.rsvpCounts.attending}</span>
-            <span>${confPct}</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width:${ev.totalGuests ? (ev.rsvpCounts.attending / ev.totalGuests * 100) : 0}%;background:var(--success)"></div>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Status</th><th>Count</th><th>%</th></tr></thead>
-          <tbody>
-            <tr><td><span class="badge badge-green">Attending</span></td><td>${ev.rsvpCounts.attending}</td><td>${pct(ev.rsvpCounts.attending, ev.totalGuests)}</td></tr>
-            <tr><td><span class="badge badge-yellow">Pending</span></td><td>${ev.rsvpCounts.pending}</td><td>${pct(ev.rsvpCounts.pending, ev.totalGuests)}</td></tr>
-            <tr><td><span class="badge badge-gray">No RSVP</span></td><td>${ev.rsvpCounts.unknown}</td><td>${pct(ev.rsvpCounts.unknown, ev.totalGuests)}</td></tr>
-            <tr><td><span class="badge badge-red">Declined</span></td><td>${ev.rsvpCounts.declined}</td><td>${pct(ev.rsvpCounts.declined, ev.totalGuests)}</td></tr>
-          </tbody>
-        </table>
-      </div>
     </div>
 
-    <!-- SPONSOR TABLES -->
+    <!-- Sponsor Tables -->
     <div class="section">
-      <h2>Sponsor Tables (${ev.sponsorTableCount})</h2>
+      <div class="section-head"><h3>Sponsor Tables</h3><span class="section-badge">${ev.sponsorTableCount} tables</span></div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Sponsor</th><th>CS</th><th>Seats</th><th>Revenue</th><th>Registered</th><th>Confirmed</th><th>Fill Rate</th></tr></thead>
+          <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Seats</th><th class="r">Revenue</th><th class="c">Guests</th><th class="c">Confirmed</th><th>Fill Rate</th></tr></thead>
           <tbody>
             ${ev.sponsorDetails.map(t => {
               const fill = t.contract > 0 ? Math.round(t.totalGuests / t.contract * 100) : 0;
-              const fillColor = fill >= 80 ? "var(--success)" : fill >= 50 ? "var(--warning)" : "var(--danger)";
-              return `
-                <tr>
-                  <td><strong>${t.name}</strong></td>
-                  <td>${t.cs || "—"}</td>
-                  <td>${t.contract}</td>
-                  <td>${fmt(t.revenue)}</td>
-                  <td>${t.registered} / ${t.totalGuests}</td>
-                  <td>${t.confirmed}</td>
-                  <td>
-                    <div style="display:flex;align-items:center;gap:8px">
-                      <div class="progress-bar" style="width:80px">
-                        <div class="progress-fill" style="width:${Math.min(fill, 100)}%;background:${fillColor}"></div>
-                      </div>
-                      <span style="font-size:0.8rem;color:${fillColor}">${fill}%</span>
-                    </div>
-                  </td>
-                </tr>
-              `;
+              const fillColor = fill >= 80 ? "var(--green)" : fill >= 50 ? "var(--amber)" : "var(--red)";
+              return `<tr>
+                <td class="b">${t.name}</td>
+                <td>${t.cs || "—"}</td>
+                <td class="c">${t.contract}</td>
+                <td class="r b">${fmt(t.revenue)}</td>
+                <td class="c">${t.registered} / ${t.totalGuests}</td>
+                <td class="c">${t.confirmed}</td>
+                <td><div style="display:flex;align-items:center;gap:8px">
+                  <div class="minibar" style="width:80px"><div class="minibar-fill" style="width:${Math.min(fill,100)}%;background:${fillColor}"></div></div>
+                  <span style="font-size:12px;font-weight:600;color:${fillColor}">${fill}%</span>
+                </div></td>
+              </tr>`;
             }).join("")}
-            <tr style="font-weight:700;background:#f1f5f9">
-              <td>TOTAL</td>
-              <td></td>
-              <td>${ev.totalTableSeats}</td>
-              <td>${fmt(ev.tableRevenue)}</td>
-              <td>${ev.sponsorDetails.reduce((s,t)=>s+t.registered,0)} / ${ev.sponsorDetails.reduce((s,t)=>s+t.totalGuests,0)}</td>
-              <td>${ev.sponsorDetails.reduce((s,t)=>s+t.confirmed,0)}</td>
+            <tr class="total-row">
+              <td>TOTAL</td><td></td>
+              <td class="c">${ev.totalTableSeats}</td>
+              <td class="r">${fmt(ev.tableRevenue)}</td>
+              <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.registered,0)} / ${ev.sponsorDetails.reduce((s,t)=>s+t.totalGuests,0)}</td>
+              <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.confirmed,0)}</td>
               <td></td>
             </tr>
           </tbody>
@@ -393,37 +514,38 @@ function render() {
       </div>
     </div>
 
-    <!-- 2025 vs 2026 COMPARISON -->
+    <!-- 2025 vs 2026 -->
     ${ev.summaryRows && ev.summaryRows.length > 0 ? `
     <div class="section">
-      <h2>2025 vs 2026 Comparison</h2>
+      <div class="section-head"><h3>2025 vs 2026 Comparison</h3></div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Category</th><th>Quota 2025</th><th>Attended 2025</th><th>Quota 2026</th><th>Registered 2026</th><th>Confirmed 2026</th><th>Revenue 2026</th></tr></thead>
+          <thead><tr><th>Category</th><th class="c">Quota 2025</th><th class="c">Attended 2025</th><th class="c">Quota 2026</th><th class="c">Registered</th><th class="c">Confirmed</th><th class="r">Revenue</th></tr></thead>
           <tbody>
             ${ev.summaryRows.map(r => `
               <tr>
-                <td><strong>${r["Category"]}</strong></td>
-                <td>${r["Quota 2025"] ?? "—"}</td>
-                <td>${r["Attended 2025"] ?? "—"}</td>
-                <td>${r["Quota 2026"] ?? "—"}</td>
-                <td>${r["Registered names"] ?? "—"}</td>
-                <td>${r["Confirmed"] ?? "—"}</td>
-                <td>${r["Revenue"] != null ? fmt(r["Revenue"]) : "—"}</td>
+                <td class="b">${r["Category"]}</td>
+                <td class="c">${r["Quota 2025"] ?? "—"}</td>
+                <td class="c">${r["Attended 2025"] ?? "—"}</td>
+                <td class="c">${r["Quota 2026"] ?? "—"}</td>
+                <td class="c">${r["Registered names"] ?? "—"}</td>
+                <td class="c">${r["Confirmed"] ?? "—"}</td>
+                <td class="r">${r["Revenue"] != null ? fmt(r["Revenue"]) : "—"}</td>
               </tr>
             `).join("")}
           </tbody>
         </table>
       </div>
-    </div>
-    ` : ""}
+    </div>` : ""}
   `;
 }
 
-function switchEvent(key) {
-  activeEvent = key;
-  render();
+// Helper for revenue bar
+function byType_amount(type, ev) {
+  return ev.byType[type]?.amount || 0;
 }
+
+function switchEvent(key) { activeEvent = key; render(); }
 
 // ── LOAD ──
 async function loadAndRender() {
@@ -440,10 +562,9 @@ async function loadAndRender() {
     console.error("Dashboard error:", err);
     document.getElementById("app").innerHTML = `
       <div class="error-box">
-        <strong>Failed to load data</strong><br>
-        ${err.message}<br><br>
+        <strong>Failed to load data</strong><br>${err.message}<br><br>
         <small>Make sure the Google Sheet is shared as "Anyone with the link" → Viewer.<br>
-        This dashboard must be served over HTTPS (e.g. GitHub Pages), not opened as a local file.</small>
+        This dashboard must be served over HTTPS (GitHub Pages), not opened locally.</small>
       </div>`;
   }
 }
