@@ -282,7 +282,10 @@ function processData(allGuests, sponsorTables, summary) {
     else rsvpFromSheet.noRsvp++;
   });
 
-  // Sponsor details
+  // Build set of sponsor org names (normalized) for matching
+  const sponsorOrgNorms = new Set(tables.map(t => normOrg(t["SPONSOR'S TABLES"] || "")));
+
+  // Sponsor details — with speaker-in-delegation detection
   const sponsorDetails = tables.map(t => {
     const orgName = t["SPONSOR'S TABLES"] || "";
     const normName = normOrg(orgName);
@@ -290,14 +293,56 @@ function processData(allGuests, sponsorTables, summary) {
     const matchGuests = ag.filter(g => g["REGISTRANT TYPE"] === "Contract table" && normOrg(g["ORGANIZATION"]) === normName);
     const regGuests = matchGuests.filter(g => g["FULL NAME"] && String(g["FULL NAME"]).trim());
     const confGuests = matchGuests.filter(g => { const s = (g["RSVP STATUS"]||"").toLowerCase(); return s === "attending" || s === "confirmed"; });
+
+    // Case 1: Contract table guests with OWNER=Content → speakers still in delegation
+    const speakersStillIn = matchGuests.filter(g => (g["OWNER"] || "").toLowerCase() === "content");
+
+    // Case 2: Free speakers whose ORG matches this sponsor → speakers extracted from delegation
+    const speakersExtracted = ag.filter(g =>
+      g["REGISTRANT TYPE"] === "Free speaker" &&
+      normOrg(g["ORGANIZATION"]) === normName
+    );
+
+    const allLinkedSpeakers = [...speakersStillIn, ...speakersExtracted];
+
     return {
       cs: t["CS"] || "", name: orgName, isPending,
       contract: parseFloat(t["CONTRACT"]) || 0,
       tableEquiv: (parseFloat(t["CONTRACT"]) || 0) / 10,
       revenue: parseFloat(t["TABLE REVENUE"]) || 0,
       totalGuests: matchGuests.length, registered: regGuests.length, confirmed: confGuests.length,
+      speakersInDelegation: speakersStillIn.length,
+      speakersExtracted: speakersExtracted.length,
+      totalLinkedSpeakers: allLinkedSpeakers.length,
     };
   });
+
+  // All speakers linked to sponsors (unified list for the detail section)
+  // Case A: Contract table/ticket with OWNER=Content → still in delegation
+  const speakersStillInDelegation = ag.filter(g =>
+    (g["REGISTRANT TYPE"] === "Contract table" || g["REGISTRANT TYPE"] === "Contract ticket") &&
+    (g["OWNER"] || "").toLowerCase() === "content"
+  ).map(g => ({
+    name: g["FULL NAME"] || "—",
+    org: g["ORGANIZATION"] || "—",
+    currentType: g["REGISTRANT TYPE"],
+    status: "in_delegation",
+    rsvp: g["RSVP STATUS"] || "",
+  }));
+
+  // Case B: Free speakers whose ORG matches a sponsor → extracted, but linked
+  const speakersExtractedFromDelegation = ag.filter(g =>
+    g["REGISTRANT TYPE"] === "Free speaker" &&
+    sponsorOrgNorms.has(normOrg(g["ORGANIZATION"]))
+  ).map(g => ({
+    name: g["FULL NAME"] || "—",
+    org: g["ORGANIZATION"] || "—",
+    currentType: "Free speaker",
+    status: "extracted",
+    rsvp: g["RSVP STATUS"] || "",
+  }));
+
+  const allSpeakersSponsorLinked = [...speakersStillInDelegation, ...speakersExtractedFromDelegation];
 
   const shuttleCount = ag.filter(r => (r["SHUTTLE"] || "").toString().toLowerCase() === "yes").length;
   // Shuttle among confirmed guests
@@ -336,7 +381,7 @@ function processData(allGuests, sponsorTables, summary) {
       confirmedTableCount: confirmedTables.length,
       pendingTableCount: pendingTables.length,
       byType, rsvpFromSummary, rsvpFromSheet,
-      sponsorDetails, shuttleCount, shuttleConfirmed,
+      sponsorDetails, allSpeakersSponsorLinked, shuttleCount, shuttleConfirmed,
       dietaryRequests,
       confirmedGuestsCount: rsvpFromSheet.attending,
       summary: summaryTotal ? {
@@ -521,11 +566,19 @@ function render() {
       </div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Tables</th><th class="c">Seats</th><th class="r">Revenue</th><th class="c">Guests</th><th class="c">Confirmed</th><th>Fill Rate</th></tr></thead>
+          <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Tables</th><th class="c">Seats</th><th class="r">Revenue</th><th class="c">Delegation</th><th class="c">Linked Speakers</th><th class="c">Confirmed</th><th>Fill Rate</th></tr></thead>
           <tbody>
             ${ev.sponsorDetails.map(t => {
               const fill = t.contract > 0 ? Math.round(t.totalGuests / t.contract * 100) : 0;
               const fillColor = fill >= 80 ? "var(--green)" : fill >= 50 ? "var(--amber)" : "var(--red)";
+              // Linked speakers: in delegation + extracted
+              const linkedLabel = t.totalLinkedSpeakers > 0
+                ? (t.speakersInDelegation > 0 && t.speakersExtracted > 0
+                  ? '<span style="color:var(--purple);font-weight:600">' + t.speakersInDelegation + ' in</span> + <span style="color:var(--amber);font-weight:600">' + t.speakersExtracted + ' out</span>'
+                  : t.speakersInDelegation > 0
+                    ? '<span style="color:var(--purple);font-weight:600">' + t.speakersInDelegation + ' in deleg.</span>'
+                    : '<span style="color:var(--amber);font-weight:600">' + t.speakersExtracted + ' extracted</span>')
+                : '<span style="color:var(--light)">0</span>';
               return `<tr>
                 <td class="b">${t.name}${t.isPending ? '<span class="pending-tag">PENDING</span>' : ''}</td>
                 <td>${t.cs || "—"}</td>
@@ -533,6 +586,7 @@ function render() {
                 <td class="c">${t.contract}</td>
                 <td class="r b">${fmt(t.revenue)}</td>
                 <td class="c">${t.registered} / ${t.totalGuests}</td>
+                <td class="c">${linkedLabel}</td>
                 <td class="c">${t.confirmed}</td>
                 <td><div style="display:flex;align-items:center;gap:8px">
                   <div class="minibar" style="width:80px"><div class="minibar-fill" style="width:${Math.min(fill,100)}%;background:${fillColor}"></div></div>
@@ -546,6 +600,7 @@ function render() {
               <td class="c">${ev.totalTableSeats}</td>
               <td class="r">${fmt(ev.tableRevenue)}</td>
               <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.registered,0)} / ${ev.sponsorDetails.reduce((s,t)=>s+t.totalGuests,0)}</td>
+              <td class="c" style="color:var(--purple);font-weight:600">${ev.sponsorDetails.reduce((s,t)=>s+t.totalLinkedSpeakers,0)}</td>
               <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.confirmed,0)}</td>
               <td></td>
             </tr>
@@ -553,6 +608,39 @@ function render() {
         </table>
       </div>
     </div>
+
+    <!-- Speakers linked to Sponsors -->
+    ${ev.allSpeakersSponsorLinked.length > 0 ? `
+    <div class="section" style="border-left:3px solid var(--purple)">
+      <div class="section-head">
+        <h3>Speakers Linked to Sponsors</h3>
+        <span class="section-badge" style="background:#ede9fe;color:#7c3aed">${ev.allSpeakersSponsorLinked.length} speaker${ev.allSpeakersSponsorLinked.length !== 1 ? 's' : ''}</span>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+        Speakers whose organization matches a sponsor table. <span style="color:var(--purple);font-weight:600">In delegation</span> = still listed as Contract table/ticket (OWNER = Content). <span style="color:var(--amber);font-weight:600">Extracted</span> = moved to Free speaker but org still matches a sponsor. If a sponsor reclaims them, they'll flip back to "In delegation".
+      </p>
+      <table>
+        <thead><tr><th>Speaker</th><th>Sponsor (Org)</th><th>Current Status</th><th>RSVP</th></tr></thead>
+        <tbody>
+          ${ev.allSpeakersSponsorLinked.map(s => {
+            const statusBadge = s.status === "in_delegation"
+              ? '<span class="badge" style="background:#ede9fe;color:#7c3aed">In delegation (' + s.currentType + ')</span>'
+              : '<span class="badge" style="background:#fef3c7;color:#92400e">Extracted (Free speaker)</span>';
+            const rsvpBadge = s.rsvp
+              ? (s.rsvp.toLowerCase().includes("attending") ? '<span class="badge badge-green">Attending</span>'
+                : s.rsvp.toLowerCase().includes("not") ? '<span class="badge badge-red">Declined</span>'
+                : '<span class="badge badge-gray">' + s.rsvp + '</span>')
+              : '<span class="badge badge-gray">No RSVP</span>';
+            return `<tr>
+              <td class="b">${s.name}</td>
+              <td>${s.org}</td>
+              <td>${statusBadge}</td>
+              <td>${rsvpBadge}</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>` : ''}
 
     <!-- 2025 vs 2026 Comparison -->
     ${ev.summaryRows && ev.summaryRows.length > 0 ? `
