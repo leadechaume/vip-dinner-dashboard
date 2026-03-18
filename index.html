@@ -307,6 +307,19 @@ function processData(allGuests, sponsorTables, summary) {
     return (rsvp === "attending" || rsvp === "confirmed") && shuttle === "yes";
   }).length;
 
+  // Dietary requirements from NOTES column
+  const dietKeywords = ["vegan","vegetarian","veggie","halal","kosher","gluten","allerg","celiac","coeliac","lactose","dairy","nut","pescatarian","diet","intoleran","no pork","no meat","no fish","no alcohol","sans","régime","végétar","végétal"];
+  const dietaryRequests = ag.filter(r => {
+    const notes = (r["NOTES"] || "").toString().toLowerCase();
+    return notes && dietKeywords.some(kw => notes.includes(kw));
+  }).map(r => ({
+    name: r["FULL NAME"] || "—",
+    org: r["ORGANIZATION"] || "—",
+    type: r["REGISTRANT TYPE"] || "—",
+    note: r["NOTES"],
+    rsvp: r["RSVP STATUS"] || "",
+  }));
+
   const summaryRows = summary.filter(r => r["Category"] && !["total","coe staff (seated)"].includes((r["Category"]||"").toLowerCase()));
 
   return {
@@ -324,6 +337,7 @@ function processData(allGuests, sponsorTables, summary) {
       pendingTableCount: pendingTables.length,
       byType, rsvpFromSummary, rsvpFromSheet,
       sponsorDetails, shuttleCount, shuttleConfirmed,
+      dietaryRequests,
       confirmedGuestsCount: rsvpFromSheet.attending,
       summary: summaryTotal ? {
         quota2026: parseFloat(summaryTotal["Quota 2026"]) || 0,
@@ -600,6 +614,34 @@ function render() {
           </table>
         </div>
       </div>
+    </div>
+
+    <!-- Dietary Requirements -->
+    <div class="section">
+      <div class="section-head">
+        <h3>Dietary Requirements</h3>
+        <span class="section-badge">${ev.dietaryRequests.length} request${ev.dietaryRequests.length !== 1 ? 's' : ''}</span>
+      </div>
+      ${ev.dietaryRequests.length > 0 ? `
+      <table>
+        <thead><tr><th>Guest</th><th>Organization</th><th>Type</th><th>Requirement (from Notes)</th><th>RSVP</th></tr></thead>
+        <tbody>
+          ${ev.dietaryRequests.map(d => `
+            <tr>
+              <td class="b">${d.name}</td>
+              <td>${d.org}</td>
+              <td>${d.type}</td>
+              <td>${d.note}</td>
+              <td>${d.rsvp ? (d.rsvp.toLowerCase().includes("attending") ? '<span class="badge badge-green">Attending</span>' : d.rsvp.toLowerCase().includes("not") ? '<span class="badge badge-red">Declined</span>' : '<span class="badge badge-gray">' + d.rsvp + '</span>') : '<span class="badge badge-gray">No RSVP</span>'}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      ` : `<div style="text-align:center;padding:32px 20px;color:var(--muted)">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:8px"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p>No dietary requirements flagged yet.</p>
+        <p style="font-size:11px;margin-top:4px">Dietary keywords in the NOTES column will appear here automatically.</p>
+      </div>`}
     </div>
   `;
 }
