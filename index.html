@@ -305,12 +305,25 @@ function processData(allGuests, sponsorTables, summary) {
 
     const allLinkedSpeakers = [...speakersStillIn, ...speakersExtracted];
 
+    // Quota logic: official delegation = guests NOT owned by Content
+    const officialDelegation = matchGuests.filter(g => (g["OWNER"] || "").toLowerCase() !== "content");
+    const officialRegistered = officialDelegation.filter(g => g["FULL NAME"] && String(g["FULL NAME"]).trim());
+    const officialConfirmed = officialDelegation.filter(g => { const s = (g["RSVP STATUS"]||"").toLowerCase(); return s === "attending" || s === "confirmed"; });
+    const seats = parseFloat(t["CONTRACT"]) || 0;
+    const seatsRemaining = seats - officialDelegation.length;
+
     return {
       cs: t["CS"] || "", name: orgName, isPending,
-      contract: parseFloat(t["CONTRACT"]) || 0,
-      tableEquiv: (parseFloat(t["CONTRACT"]) || 0) / 10,
+      contract: seats,
+      tableEquiv: seats / 10,
       revenue: parseFloat(t["TABLE REVENUE"]) || 0,
       totalGuests: matchGuests.length, registered: regGuests.length, confirmed: confGuests.length,
+      // Quota
+      officialDelegation: officialDelegation.length,
+      officialRegistered: officialRegistered.length,
+      officialConfirmed: officialConfirmed.length,
+      seatsRemaining,
+      // Speakers
       speakersInDelegation: speakersStillIn.length,
       speakersExtracted: speakersExtracted.length,
       totalLinkedSpeakers: allLinkedSpeakers.length,
@@ -398,6 +411,84 @@ function processData(allGuests, sponsorTables, summary) {
     },
     raise: null,
   };
+}
+
+// ── Quota rows builder (avoids nested template literals) ──
+function buildQuotaRows(ev) {
+  var html = "";
+  var skipCats = ["walk-in", "vip dinner single ticket"];
+
+  // Main categories (not sub-items starting with →)
+  ev.summaryRows.filter(function(r) {
+    var cat = (r["Category"] || "").toLowerCase();
+    return !cat.startsWith("→") && skipCats.indexOf(cat) === -1;
+  }).forEach(function(r) {
+    var quota = parseFloat(r["Quota 2026"]) || 0;
+    var reg = parseInt(r["Registered names"]) || 0;
+    var conf = parseInt(r["Confirmed"]) || 0;
+    var pend = parseInt(r["Pending"]) || 0;
+    var estimate = parseInt(r["Current Estimate (Confirmed + Pending)"]) || (conf + pend);
+    var progPct = quota > 0 ? Math.min(Math.round(estimate / quota * 100), 100) : 0;
+    var progColor = progPct >= 80 ? "var(--green)" : progPct >= 50 ? "var(--amber)" : "var(--red)";
+    var rev = r["Revenue"];
+    html += '<tr>';
+    html += '<td class="b">' + r["Category"] + '</td>';
+    html += '<td class="c">' + (quota || "—") + '</td>';
+    html += '<td class="c">' + reg + '</td>';
+    html += '<td class="c">' + conf + '</td>';
+    html += '<td class="c">' + pend + '</td>';
+    html += '<td><div style="display:flex;align-items:center;gap:8px">';
+    html += '<div class="minibar" style="width:100px"><div class="minibar-fill" style="width:' + progPct + '%;background:' + progColor + '"></div></div>';
+    html += '<span style="font-size:12px;font-weight:600;color:' + progColor + '">' + estimate + '/' + (quota || "—") + (quota ? ' (' + progPct + '%)' : '') + '</span>';
+    html += '</div></td>';
+    html += '<td class="r">' + (rev != null && rev !== 0 ? fmt(rev) : '<span style="color:var(--light)">—</span>') + '</td>';
+    html += '</tr>';
+  });
+
+  // Sub-categories (→ Contract ticket, → Contract table)
+  ev.summaryRows.filter(function(r) {
+    return (r["Category"] || "").startsWith("→");
+  }).forEach(function(r) {
+    var quota = parseFloat(r["Quota 2026"]) || 0;
+    var reg = parseInt(r["Registered names"]) || 0;
+    var conf = parseInt(r["Confirmed"]) || 0;
+    var pend = parseInt(r["Pending"]) || 0;
+    var estimate = parseInt(r["Current Estimate (Confirmed + Pending)"]) || (conf + pend);
+    var progPct = quota > 0 ? Math.min(Math.round(estimate / quota * 100), 100) : 0;
+    var progColor = progPct >= 80 ? "var(--green)" : progPct >= 50 ? "var(--amber)" : "var(--red)";
+    var rev = r["Revenue"];
+    html += '<tr style="color:var(--muted)">';
+    html += '<td style="padding-left:28px;font-size:12px">' + r["Category"] + '</td>';
+    html += '<td class="c" style="font-size:12px">' + (quota || "—") + '</td>';
+    html += '<td class="c" style="font-size:12px">' + reg + '</td>';
+    html += '<td class="c" style="font-size:12px">' + conf + '</td>';
+    html += '<td class="c" style="font-size:12px">' + pend + '</td>';
+    html += '<td><div style="display:flex;align-items:center;gap:8px">';
+    html += '<div class="minibar" style="width:100px;height:6px"><div class="minibar-fill" style="width:' + progPct + '%;background:' + progColor + ';height:6px"></div></div>';
+    html += '<span style="font-size:11px;color:' + progColor + '">' + estimate + '/' + (quota || "—") + '</span>';
+    html += '</div></td>';
+    html += '<td class="r" style="font-size:12px">' + (rev != null && rev !== 0 ? fmt(rev) : '<span style="color:var(--light)">—</span>') + '</td>';
+    html += '</tr>';
+  });
+
+  // Total row
+  if (ev.summary) {
+    var totalEst = ev.summary.confirmed2026 + ev.summary.pending2026;
+    var totalPct = Math.round(totalEst / ev.summary.quota2026 * 100);
+    html += '<tr class="total-row">';
+    html += '<td>TOTAL</td>';
+    html += '<td class="c">' + ev.summary.quota2026 + '</td>';
+    html += '<td class="c">' + ev.summary.registered2026 + '</td>';
+    html += '<td class="c">' + ev.summary.confirmed2026 + '</td>';
+    html += '<td class="c">' + ev.summary.pending2026 + '</td>';
+    html += '<td><div style="display:flex;align-items:center;gap:8px">';
+    html += '<div class="minibar" style="width:100px"><div class="minibar-fill" style="width:' + Math.min(totalPct, 100) + '%;background:var(--indigo)"></div></div>';
+    html += '<span style="font-size:12px;font-weight:700;color:var(--indigo)">' + totalEst + '/' + ev.summary.quota2026 + ' (' + totalPct + '%)</span>';
+    html += '</div></td>';
+    html += '<td class="r">' + fmt(ev.summary.revenue2026) + '</td>';
+    html += '</tr>';
+  }
+  return html;
 }
 
 // ── RENDER ──
@@ -525,14 +616,16 @@ function render() {
       </div>
     </div>
 
-    <!-- RSVP + Guest Breakdown -->
-    <div class="grid-2">
-      <div class="section">
-        <div class="section-head"><h3>RSVP Status</h3><span class="section-badge">${rsvp.confirmed} confirmed</span></div>
-        <div class="rsvp-prog">
-          <div class="rsvp-prog-top"><span>Confirmed (RSVP)</span><span>${rsvp.confirmed} / ${rsvp.confirmed + rsvp.pending}</span></div>
-          <div class="minibar" style="height:12px;border-radius:6px">
-            <div class="minibar-fill" style="width:${(rsvp.confirmed + rsvp.pending) > 0 ? rsvp.confirmed / (rsvp.confirmed + rsvp.pending) * 100 : 0}%;background:var(--green);border-radius:6px"></div>
+    <!-- RSVP Status -->
+    <div class="section">
+      <div class="section-head"><h3>RSVP Status</h3><span class="section-badge">${rsvp.confirmed} confirmed</span></div>
+      <div class="grid-2" style="margin-top:0">
+        <div>
+          <div class="rsvp-prog">
+            <div class="rsvp-prog-top"><span>Confirmed (RSVP)</span><span>${rsvp.confirmed} / ${rsvp.confirmed + rsvp.pending}</span></div>
+            <div class="minibar" style="height:12px;border-radius:6px">
+              <div class="minibar-fill" style="width:${(rsvp.confirmed + rsvp.pending) > 0 ? rsvp.confirmed / (rsvp.confirmed + rsvp.pending) * 100 : 0}%;background:var(--green);border-radius:6px"></div>
+            </div>
           </div>
         </div>
         <table>
@@ -544,14 +637,16 @@ function render() {
           </tbody>
         </table>
       </div>
-      <div class="section">
-        <div class="section-head"><h3>Guest Breakdown by Type</h3></div>
+    </div>
+
+    <!-- Quotas by Category -->
+    <div class="section">
+      <div class="section-head"><h3>Quotas by Category</h3><span class="section-badge">${ev.summary ? ev.summary.registered2026 + ' / ' + ev.summary.quota2026 + ' total' : ''}</span></div>
+      <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Type</th><th class="c">Total</th><th class="c">Registered</th><th class="r">Revenue</th></tr></thead>
+          <thead><tr><th>Category</th><th class="c">Quota 2026</th><th class="c">Registered</th><th class="c">Confirmed</th><th class="c">Pending</th><th>Progress vs Quota</th><th class="r">Revenue</th></tr></thead>
           <tbody>
-            ${Object.entries(ev.byType).map(([type, d]) => `
-              <tr><td class="b">${type}</td><td class="c">${d.count}</td><td class="c">${d.registered}</td><td class="r">${d.amount > 0 ? fmt(d.amount) : '<span style="color:var(--light)">—</span>'}</td></tr>
-            `).join("")}
+            ${buildQuotaRows(ev)}
           </tbody>
         </table>
       </div>
@@ -566,42 +661,44 @@ function render() {
       </div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Tables</th><th class="c">Seats</th><th class="r">Revenue</th><th class="c">Delegation</th><th class="c">Linked Speakers</th><th class="c">Confirmed</th><th>Fill Rate</th></tr></thead>
+          <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Tables</th><th class="r">Revenue</th><th class="c">Quota</th><th class="c">Delegation</th><th class="c">Remaining</th><th class="c" style="color:var(--purple)">Speakers</th><th>Quota Fill</th></tr></thead>
           <tbody>
             ${ev.sponsorDetails.map(t => {
-              const fill = t.contract > 0 ? Math.round(t.totalGuests / t.contract * 100) : 0;
-              const fillColor = fill >= 80 ? "var(--green)" : fill >= 50 ? "var(--amber)" : "var(--red)";
-              // Linked speakers: in delegation + extracted
-              const linkedLabel = t.totalLinkedSpeakers > 0
+              // Fill rate based on OFFICIAL delegation only (not speakers)
+              const quotaFill = t.contract > 0 ? Math.round(t.officialDelegation / t.contract * 100) : 0;
+              const fillColor = quotaFill >= 80 ? "var(--green)" : quotaFill >= 50 ? "var(--amber)" : "var(--red)";
+              const remainColor = t.seatsRemaining > 0 ? "var(--muted)" : t.seatsRemaining === 0 ? "var(--green)" : "var(--red)";
+              // Linked speakers label
+              const spkLabel = t.totalLinkedSpeakers > 0
                 ? (t.speakersInDelegation > 0 && t.speakersExtracted > 0
-                  ? '<span style="color:var(--purple);font-weight:600">' + t.speakersInDelegation + ' in</span> + <span style="color:var(--amber);font-weight:600">' + t.speakersExtracted + ' out</span>'
+                  ? '<span style="color:var(--purple)">' + t.speakersInDelegation + ' in</span> + <span style="color:var(--amber)">' + t.speakersExtracted + ' out</span>'
                   : t.speakersInDelegation > 0
-                    ? '<span style="color:var(--purple);font-weight:600">' + t.speakersInDelegation + ' in deleg.</span>'
-                    : '<span style="color:var(--amber);font-weight:600">' + t.speakersExtracted + ' extracted</span>')
+                    ? '<span style="color:var(--purple)">' + t.speakersInDelegation + ' in deleg.</span>'
+                    : '<span style="color:var(--amber)">' + t.speakersExtracted + ' extracted</span>')
                 : '<span style="color:var(--light)">0</span>';
               return `<tr>
                 <td class="b">${t.name}${t.isPending ? '<span class="pending-tag">PENDING</span>' : ''}</td>
                 <td>${t.cs || "—"}</td>
                 <td class="c">${t.tableEquiv}</td>
-                <td class="c">${t.contract}</td>
                 <td class="r b">${fmt(t.revenue)}</td>
-                <td class="c">${t.registered} / ${t.totalGuests}</td>
-                <td class="c">${linkedLabel}</td>
-                <td class="c">${t.confirmed}</td>
+                <td class="c b">${t.contract}</td>
+                <td class="c">${t.officialRegistered} / ${t.officialDelegation}</td>
+                <td class="c" style="color:${remainColor};font-weight:600">${t.seatsRemaining}</td>
+                <td class="c">${spkLabel}</td>
                 <td><div style="display:flex;align-items:center;gap:8px">
-                  <div class="minibar" style="width:80px"><div class="minibar-fill" style="width:${Math.min(fill,100)}%;background:${fillColor}"></div></div>
-                  <span style="font-size:12px;font-weight:600;color:${fillColor}">${fill}%</span>
+                  <div class="minibar" style="width:80px"><div class="minibar-fill" style="width:${Math.min(quotaFill,100)}%;background:${fillColor}"></div></div>
+                  <span style="font-size:12px;font-weight:600;color:${fillColor}">${quotaFill}%</span>
                 </div></td>
               </tr>`;
             }).join("")}
             <tr class="total-row">
               <td>TOTAL</td><td></td>
               <td class="c">${ev.totalTableEquiv}</td>
-              <td class="c">${ev.totalTableSeats}</td>
               <td class="r">${fmt(ev.tableRevenue)}</td>
-              <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.registered,0)} / ${ev.sponsorDetails.reduce((s,t)=>s+t.totalGuests,0)}</td>
+              <td class="c">${ev.totalTableSeats}</td>
+              <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.officialRegistered,0)} / ${ev.sponsorDetails.reduce((s,t)=>s+t.officialDelegation,0)}</td>
+              <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.seatsRemaining,0)}</td>
               <td class="c" style="color:var(--purple);font-weight:600">${ev.sponsorDetails.reduce((s,t)=>s+t.totalLinkedSpeakers,0)}</td>
-              <td class="c">${ev.sponsorDetails.reduce((s,t)=>s+t.confirmed,0)}</td>
               <td></td>
             </tr>
           </tbody>
