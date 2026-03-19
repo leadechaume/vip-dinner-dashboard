@@ -228,8 +228,44 @@ function circularProgress(pctVal, size = 140, stroke = 10) {
   </svg>`;
 }
 
+// ── Normalize SUMMARY row keys ──
+// gviz headers=2 may prefix merged row text, e.g.
+// "2026 LIVE PIPELINE Quota 2026" instead of "Quota 2026"
+// We remap all keys to clean short names
+function normalizeSummaryRow(row) {
+  if (!row) return row;
+  var clean = {};
+  var keys = Object.keys(row);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var kl = k.toLowerCase();
+    // Map to clean key names
+    if (kl === "category") clean["Category"] = row[k];
+    else if (kl.includes("quota 2025")) clean["Quota 2025"] = row[k];
+    else if (kl.includes("registered 2025")) clean["Registered 2025"] = row[k];
+    else if (kl.includes("attended 2025")) clean["Attended 2025"] = row[k];
+    else if (kl.includes("confirmed 2025")) clean["Confirmed 2025"] = row[k];
+    else if (kl.includes("quota 2026")) clean["Quota 2026"] = row[k];
+    else if (kl.includes("estimation 2026")) clean["Estimation 2026"] = row[k];
+    else if (kl.includes("registered names")) clean["Registered names"] = row[k];
+    else if (kl.includes("pending names")) clean["Pending names"] = row[k];
+    else if (kl.includes("total guests")) clean["Total Guests (with pending names)"] = row[k];
+    else if (kl.includes("current estimate")) clean["Current Estimate (Confirmed + Pending)"] = row[k];
+    else if (kl === "confirmed" || kl.endsWith(" confirmed")) { if (!clean["Confirmed"]) clean["Confirmed"] = row[k]; }
+    else if (kl === "pending" || (kl.endsWith(" pending") && !kl.includes("names"))) { if (!clean["Pending"]) clean["Pending"] = row[k]; }
+    else if (kl === "shuttle" || kl.endsWith(" shuttle")) clean["Shuttle"] = row[k];
+    else if (kl === "attended" || (kl.endsWith(" attended") && !kl.includes("2025"))) clean["Attended"] = row[k];
+    else if (kl === "declined" || kl.endsWith(" declined")) clean["Declined"] = row[k];
+    else if (kl === "revenue" || kl.endsWith(" revenue")) clean["Revenue"] = row[k];
+    else if (kl.includes("no show")) clean["No Show"] = row[k];
+  }
+  return clean;
+}
+
 // ── PROCESS DATA ──
-function processData(allGuests, sponsorTables, summary) {
+function processData(allGuests, sponsorTables, rawSummary) {
+  // Normalize summary column names (gviz headers=2 prefixes merged row text)
+  var summary = rawSummary.map(normalizeSummaryRow);
   const ag = allGuests.filter(r => r["REGISTRANT TYPE"]);
   const tables = sponsorTables.filter(r => r["SPONSOR'S TABLES"]);
 
