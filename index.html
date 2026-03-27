@@ -201,6 +201,65 @@ async function fetchSheet(name, headerRows = 1) {
   }).filter(obj => Object.values(obj).some(v => v !== null && v !== ""));
 }
 
+// ── FETCH via CSV export (bypasses filters!) ──
+function parseCSV(text) {
+  const rows = [];
+  let current = [];
+  let field = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { field += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { current.push(field); field = ""; }
+      else if (ch === '\n' || (ch === '\r' && text[i + 1] === '\n')) {
+        current.push(field); field = "";
+        if (current.some(c => c !== "")) rows.push(current);
+        current = [];
+        if (ch === '\r') i++;
+      } else { field += ch; }
+    }
+  }
+  if (field || current.length) { current.push(field); if (current.some(c => c !== "")) rows.push(current); }
+  return rows;
+}
+
+async function fetchSheetCSV(gid) {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/export?format=csv&gid=${gid}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`CSV export HTTP ${res.status}`);
+  const txt = await res.text();
+  const parsed = parseCSV(txt);
+  if (parsed.length < 2) return [];
+  const headers = parsed[0].map(h => h.trim());
+  return parsed.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => {
+      let val = (row[i] || "").trim();
+      // Try to parse numbers (handle €2,500.00 or 2 500,00 € or plain 2500)
+      if (val.match(/^[€$]?\s*[\d\s.,]+\s*[€$]?\s*$/)) {
+        // Detect European format: "2 500,00" (space=thousands, comma=decimal)
+        let cleaned = val.replace(/[€$]/g, "").trim();
+        if (cleaned.match(/\d+[\s.]\d{3}/) && cleaned.includes(",")) {
+          // European: replace spaces/dots as thousands sep, comma as decimal
+          cleaned = cleaned.replace(/[\s.]/g, "").replace(",", ".");
+        } else {
+          // US/standard: remove commas and spaces
+          cleaned = cleaned.replace(/[\s,]/g, "");
+        }
+        const num = parseFloat(cleaned);
+        if (!isNaN(num)) { obj[h] = num; return; }
+      }
+      obj[h] = val || null;
+    });
+    return obj;
+  }).filter(obj => Object.values(obj).some(v => v !== null && v !== ""));
+}
+
 // ── Helpers ──
 function normOrg(name) { return (name || "").toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, ""); }
 function fmt(n) { return n != null ? "€" + Math.round(n).toLocaleString("fr-FR") : "—"; }
@@ -922,11 +981,20 @@ function switchEvent(key) { activeEvent = key; render(); }
 
 async function loadAndRender() {
   try {
-    const [ag, st, su] = await Promise.all([
-      fetchSheet("ALL GUESTS", 1),
+    let ag;
+    try {
+      ag = await fetchSheetCSV(0);        // CSV export bypasses sheet filters
+      console.log("ALL GUESTS via CSV:", ag.length, "rows");
+    } catch (csvErr) {
+      console.warn("CSV export failed, falling back to gviz:", csvErr);
+      ag = await fetchSheet("ALL GUESTS", 1);
+      console.log("ALL GUESTS via gviz:", ag.length, "rows");
+    }
+    const [st, su] = await Promise.all([
       fetchSheet("SPONSOR TABLES", 1),
       fetchSheet("SUMMARY", 2),
     ]);
+    console.log("SPONSOR TABLES:", st.length, "rows | SUMMARY:", su.length, "rows");
     EVENTS = processData(ag, st, su);
     lastRefresh = new Date();
     render();
