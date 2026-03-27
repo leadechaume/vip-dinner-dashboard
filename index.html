@@ -317,7 +317,7 @@ function normalizeSummaryRow(row) {
     else if (kl === "pending" || (kl.endsWith(" pending") && !kl.includes("names"))) { if (!clean["Pending"]) clean["Pending"] = row[k]; }
     else if (kl === "no shuttle" || kl.endsWith(" no shuttle")) clean["No shuttle"] = row[k];
     else if (kl === "shuttle" || kl.endsWith(" shuttle")) clean["Shuttle"] = row[k];
-    else if (kl === "car" || kl.endsWith(" car")) clean["Car"] = row[k];
+    else if (kl === "coach" || kl.endsWith(" coach")) clean["Coach"] = row[k];
     else if (kl === "van" || kl.endsWith(" van")) clean["Van"] = row[k];
     else if (kl === "attended" || (kl.endsWith(" attended") && !kl.includes("2025"))) clean["Attended"] = row[k];
     else if (kl === "declined" || kl.endsWith(" declined")) clean["Declined"] = row[k];
@@ -359,7 +359,7 @@ function processData(allGuests, sponsorTables, rawSummary) {
     byType[t].amount += parseFloat(r["AMOUNT ALLOCATED TO THE VIP DINNER"]) || 0;
     const rsvp = (r["RSVP STATUS"] || "").toLowerCase();
     if (rsvp === "attending" || rsvp === "confirmed") byType[t].confirmed++;
-    if ((r["SHUTTLE"] || "").toString().toLowerCase() === "car" || (r["SHUTTLE"] || "").toString().toLowerCase() === "van") byType[t].shuttle++;
+    if ((r["SHUTTLE"] || "").toString().toLowerCase() === "coach" || (r["SHUTTLE"] || "").toString().toLowerCase() === "van") byType[t].shuttle++;
   });
 
   const ticketRevenue = (byType["Contract ticket"]?.amount || 0) + (byType["Ticket"]?.amount || 0);
@@ -458,12 +458,12 @@ function processData(allGuests, sponsorTables, rawSummary) {
 
   const allSpeakersSponsorLinked = [...speakersStillInDelegation, ...speakersExtractedFromDelegation];
 
-  const shuttleCount = ag.filter(r => (r["SHUTTLE"] || "").toString().toLowerCase() === "car" || (r["SHUTTLE"] || "").toString().toLowerCase() === "van").length;
+  const shuttleCount = ag.filter(r => (r["SHUTTLE"] || "").toString().toLowerCase() === "coach" || (r["SHUTTLE"] || "").toString().toLowerCase() === "van").length;
   // Shuttle among confirmed guests
   const shuttleConfirmed = ag.filter(r => {
     const rsvp = (r["RSVP STATUS"] || "").toLowerCase();
     const shuttle = (r["SHUTTLE"] || "").toString().toLowerCase();
-    return (rsvp === "attending" || rsvp === "confirmed") && (shuttle === "car" || shuttle === "van");
+    return (rsvp === "attending" || rsvp === "confirmed") && (shuttle === "coach" || shuttle === "van");
   }).length;
 
   // Dietary requirements from NOTES column
@@ -486,8 +486,9 @@ function processData(allGuests, sponsorTables, rawSummary) {
       totalRevenue, confirmedRevenue, pendingRevenue: pendingTableRevenue,
       ticketRevenue, tableRevenue: totalTableRevenue,
       confirmedTableRevenue, pendingTableRevenue,
-      totalGuests: ag.length,
-      registeredGuests: ag.filter(r => r["FULL NAME"] && String(r["FULL NAME"]).trim()).length,
+      // Exclude CoE staff from guest counts (matches SUMMARY sheet logic)
+      totalGuests: ag.filter(r => (r["REGISTRANT TYPE"] || "").toLowerCase() !== "coe staff (seated)").length,
+      registeredGuests: ag.filter(r => r["FULL NAME"] && String(r["FULL NAME"]).trim() && (r["REGISTRANT TYPE"] || "").toLowerCase() !== "coe staff (seated)").length,
       totalTableSeats, confirmedTableSeats, pendingTableSeats,
       confirmedTableEquiv, pendingTableEquiv,
       totalTableEquiv: confirmedTableEquiv + pendingTableEquiv,
@@ -507,7 +508,7 @@ function processData(allGuests, sponsorTables, rawSummary) {
         attended2025: parseFloat(summaryTotal["Attended 2025"]) || 0,
         quota2025: parseFloat(summaryTotal["Quota 2025"]) || 0,
         shuttle2026: parseFloat(summaryTotal["Shuttle"]) || 0,
-        car2026: parseFloat(summaryTotal["Car"]) || 0,
+        coach2026: parseFloat(summaryTotal["Coach"]) || 0,
         van2026: parseFloat(summaryTotal["Van"]) || 0,
         noShuttle2026: parseFloat(summaryTotal["No shuttle"]) || 0,
       } : null,
@@ -520,7 +521,7 @@ function processData(allGuests, sponsorTables, rawSummary) {
       ).map(r => ({
         category: r["Category"],
         shuttle: parseInt(r["Shuttle"]) || 0,
-        car: parseInt(r["Car"]) || 0,
+        coach: parseInt(r["Coach"]) || 0,
         van: parseInt(r["Van"]) || 0,
         noShuttle: parseInt(r["No shuttle"]) || 0,
       })),
@@ -694,8 +695,8 @@ function render() {
         <div class="kpi-top">
           <div>
             <div class="kpi-title">Total Guests</div>
-            <div class="kpi-val">${ev.totalGuests}</div>
-            <div class="kpi-sub">Registered: ${ev.registeredGuests} · Quota: ${ev.summary?.quota2026 || "—"}</div>
+            <div class="kpi-val">${ev.summary?.registered2026 || ev.registeredGuests}</div>
+            <div class="kpi-sub">Places: ${ev.totalGuests} · Quota: ${ev.summary?.quota2026 || "—"}</div>
           </div>
           <div class="kpi-icon" style="background:#f59e0b15">${ICONS.person}</div>
         </div>
@@ -905,9 +906,9 @@ function render() {
           ${ev.summary ? `
           <div style="display:flex;gap:12px;margin-top:16px">
             <div style="flex:1;background:#f0f9ff;border-radius:10px;padding:14px;text-align:center">
-              <div style="font-size:24px;font-weight:700;color:#2563eb">${ev.summary.car2026}</div>
-              <div style="font-size:12px;color:var(--muted);margin-top:2px">Voiture</div>
-              <div style="font-size:11px;color:#2563eb;font-weight:600">${ev.summary.shuttle2026 > 0 ? Math.round(ev.summary.car2026 / ev.summary.shuttle2026 * 100) : 0}%</div>
+              <div style="font-size:24px;font-weight:700;color:#2563eb">${ev.summary.coach2026}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">Bus</div>
+              <div style="font-size:11px;color:#2563eb;font-weight:600">${ev.summary.shuttle2026 > 0 ? Math.round(ev.summary.coach2026 / ev.summary.shuttle2026 * 100) : 0}%</div>
             </div>
             <div style="flex:1;background:#fef3c7;border-radius:10px;padding:14px;text-align:center">
               <div style="font-size:24px;font-weight:700;color:#d97706">${ev.summary.van2026}</div>
@@ -923,13 +924,13 @@ function render() {
         </div>
         <div>
           <table>
-            <thead><tr><th>Catégorie</th><th class="c">Transport</th><th class="c">Voiture</th><th class="c">Van</th><th class="c">Sans</th></tr></thead>
+            <thead><tr><th>Catégorie</th><th class="c">Transport</th><th class="c">Bus</th><th class="c">Van</th><th class="c">Sans</th></tr></thead>
             <tbody>
               ${(ev.transportByCategory || []).map(t => `
                 <tr>
                   <td class="b">${t.category}</td>
                   <td class="c">${t.shuttle}</td>
-                  <td class="c">${t.car}</td>
+                  <td class="c">${t.coach}</td>
                   <td class="c" style="color:var(--amber);font-weight:600">${t.van > 0 ? t.van : '—'}</td>
                   <td class="c" style="color:var(--muted)">${t.noShuttle > 0 ? t.noShuttle : '—'}</td>
                 </tr>
@@ -937,7 +938,7 @@ function render() {
               <tr class="total-row">
                 <td>TOTAL</td>
                 <td class="c">${ev.summary ? ev.summary.shuttle2026 : ev.shuttleCount}</td>
-                <td class="c">${ev.summary ? ev.summary.car2026 : '—'}</td>
+                <td class="c">${ev.summary ? ev.summary.coach2026 : '—'}</td>
                 <td class="c" style="color:var(--amber);font-weight:600">${ev.summary ? ev.summary.van2026 : '—'}</td>
                 <td class="c">${ev.summary ? ev.summary.noShuttle2026 : '—'}</td>
               </tr>
