@@ -410,6 +410,9 @@ function processData(allGuests, sponsorTables, rawSummary) {
     const regGuests = matchGuests.filter(g => g["FULL NAME"] && String(g["FULL NAME"]).trim());
     const confGuests = matchGuests.filter(g => { const s = (g["RSVP STATUS"]||"").toLowerCase(); return s === "attending" || s === "confirmed"; });
 
+    // Contract ticket guests linked to this sponsor
+    const ticketGuests = ag.filter(g => g["REGISTRANT TYPE"] === "Contract ticket" && normOrg(g["ORGANIZATION"]) === normName);
+
     // Case 1: Contract table guests with OWNER=Content → speakers still in delegation
     const speakersStillIn = matchGuests.filter(g => (g["OWNER"] || "").toLowerCase() === "content");
 
@@ -451,6 +454,10 @@ function processData(allGuests, sponsorTables, rawSummary) {
         isSpeaker: (g["OWNER"] || "").toLowerCase() === "content",
       })),
       extractedSpeakerList: speakersExtracted.map(g => ({
+        name: g["FULL NAME"] || "",
+        rsvp: (g["RSVP STATUS"] || "").toLowerCase().trim(),
+      })),
+      ticketGuestList: ticketGuests.map(g => ({
         name: g["FULL NAME"] || "",
         rsvp: (g["RSVP STATUS"] || "").toLowerCase().trim(),
       })),
@@ -804,6 +811,13 @@ function render() {
         <span class="section-badge">${ev.confirmedTableEquiv} confirmed</span>
         ${ev.pendingTableCount > 0 ? `<span class="section-badge pending">+ ${ev.pendingTableEquiv} pending</span>` : ''}
       </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--muted)">
+        <span><span class="drill-chip confirmed" style="font-size:10px;padding:1px 6px">Name</span> Confirmed</span>
+        <span><span class="drill-chip pending" style="font-size:10px;padding:1px 6px">Name</span> Pending RSVP</span>
+        <span><span class="drill-chip declined" style="font-size:10px;padding:1px 6px">Name</span> Declined</span>
+        <span><span class="drill-chip empty" style="font-size:10px;padding:1px 6px">Empty seat</span> Unassigned</span>
+        <span style="color:var(--purple);font-weight:600">SPK</span> = Speaker
+      </div>
       <div style="overflow-x:auto">
         <table>
           <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Tables</th><th class="r">Revenue</th><th class="c">Quota</th><th class="c">Delegation</th><th class="c">Remaining</th><th class="c" style="color:var(--purple)">Speakers</th><th>Quota Fill</th></tr></thead>
@@ -821,26 +835,38 @@ function render() {
                     ? '<span style="color:var(--purple)">' + t.speakersInDelegation + ' in deleg.</span>'
                     : '<span style="color:var(--amber)">' + t.speakersExtracted + ' extracted</span>')
                 : '<span style="color:var(--light)">0</span>';
-              // Build guest chips
-              const allGuests = [...t.guestList];
-              // Add extracted speakers (Free speakers linked to this sponsor)
-              const extractedSpk = t.extractedSpeakerList || [];
-              const chips = allGuests.map(g => {
-                const rsvpClass = (g.rsvp === "attending" || g.rsvp === "confirmed") ? "confirmed" : (g.rsvp.includes("not attending") || g.rsvp === "declined" || g.rsvp === "cancelled") ? "declined" : "pending";
-                const spkClass = g.isSpeaker ? " speaker" : "";
-                const nameLabel = g.name ? g.name : '<em>Place sans nom</em>';
+              // Helper to get RSVP class
+              const rsvpCls = (rsvp) => (rsvp === "attending" || rsvp === "confirmed") ? "confirmed" : (rsvp.includes("not attending") || rsvp === "declined" || rsvp === "cancelled") ? "declined" : "pending";
+              // Build TABLE guest chips
+              const tableChips = t.guestList.map(g => {
+                const nameLabel = g.name ? g.name : '<em>Unnamed guest</em>';
                 const spkTag = g.isSpeaker ? ' <span style="color:var(--purple);font-size:9px">SPK</span>' : '';
-                return `<span class="drill-chip ${rsvpClass}${spkClass}">${nameLabel}${spkTag}</span>`;
+                return `<span class="drill-chip ${rsvpCls(g.rsvp)}${g.isSpeaker ? " speaker" : ""}">${nameLabel}${spkTag}</span>`;
               });
               // Add extracted free speakers
-              extractedSpk.forEach(g => {
-                const rsvpClass = (g.rsvp === "attending" || g.rsvp === "confirmed") ? "confirmed" : (g.rsvp.includes("not attending") || g.rsvp === "declined" || g.rsvp === "cancelled") ? "declined" : "pending";
-                chips.push(`<span class="drill-chip ${rsvpClass} speaker">${g.name || "—"} <span style="color:var(--amber);font-size:9px">SPK ext.</span></span>`);
+              (t.extractedSpeakerList || []).forEach(g => {
+                tableChips.push(`<span class="drill-chip ${rsvpCls(g.rsvp)} speaker">${g.name || "—"} <span style="color:var(--amber);font-size:9px">SPK ext.</span></span>`);
               });
               // Empty seats
               const emptySeats = Math.max(0, t.contract - t.officialDelegation - t.speakersInDelegation);
-              for (let i = 0; i < emptySeats; i++) chips.push('<span class="drill-chip empty">Seat libre</span>');
+              for (let i = 0; i < emptySeats; i++) tableChips.push('<span class="drill-chip empty">Empty seat</span>');
+              // Build CONTRACT TICKET chips
+              const ticketChips = (t.ticketGuestList || []).map(g => {
+                const nameLabel = g.name ? g.name : '<em>Unnamed guest</em>';
+                return `<span class="drill-chip ${rsvpCls(g.rsvp)}">${nameLabel}</span>`;
+              });
+              // Build drill-down content
               const drillId = "drill-" + idx;
+              let drillHtml = '';
+              if (tableChips.length > 0) {
+                drillHtml += '<div style="padding:8px 16px 2px"><span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Table seats</span></div>';
+                drillHtml += '<div class="drill-list">' + tableChips.join("") + '</div>';
+              }
+              if (ticketChips.length > 0) {
+                drillHtml += '<div style="padding:8px 16px 2px"><span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Contract tickets</span></div>';
+                drillHtml += '<div class="drill-list">' + ticketChips.join("") + '</div>';
+              }
+              if (!drillHtml) drillHtml = '<div class="drill-list"><span style="color:var(--muted);font-size:12px">No guests</span></div>';
               return `<tr class="drill-toggle" onclick="var el=document.getElementById('${drillId}');var ar=this.querySelector('.drill-arrow');el.classList.toggle('open');ar.classList.toggle('open');">
                 <td class="b"><span class="drill-arrow">&#9654;</span>${t.name}${t.isPending ? '<span class="pending-tag">PENDING</span>' : ''}</td>
                 <td>${t.cs || "—"}</td>
@@ -855,7 +881,7 @@ function render() {
                   <span style="font-size:12px;font-weight:600;color:${fillColor}">${quotaFill}%</span>
                 </div></td>
               </tr>
-              <tr class="drill-row"><td colspan="9"><div id="${drillId}" class="drill-content"><div class="drill-list">${chips.length > 0 ? chips.join("") : '<span style="color:var(--muted);font-size:12px">Aucun invité</span>'}</div></div></td></tr>`;
+              <tr class="drill-row"><td colspan="9"><div id="${drillId}" class="drill-content">${drillHtml}</div></td></tr>`;
             }).join("")}
             <tr class="total-row">
               <td>TOTAL</td><td></td>
