@@ -511,6 +511,8 @@ function processData(allGuests, sponsorTables, rawSummary) {
         coach2026: parseFloat(summaryTotal["Coach"]) || 0,
         van2026: parseFloat(summaryTotal["Van"]) || 0,
         noShuttle2026: parseFloat(summaryTotal["No shuttle"]) || 0,
+        totalGuests2026: parseFloat(summaryTotal["Total Guests (with pending names)"]) || 0,
+        currentEstimate2026: parseFloat(summaryTotal["Current Estimate (Confirmed + Pending)"]) || 0,
       } : null,
       summaryRows,
       // Transport breakdown by category from SUMMARY
@@ -695,8 +697,8 @@ function render() {
         <div class="kpi-top">
           <div>
             <div class="kpi-title">Total Guests</div>
-            <div class="kpi-val">${ev.summary?.registered2026 || ev.registeredGuests}</div>
-            <div class="kpi-sub">Places: ${ev.totalGuests} · Quota: ${ev.summary?.quota2026 || "—"}</div>
+            <div class="kpi-val">${ev.summary?.totalGuests2026 || ev.totalGuests}</div>
+            <div class="kpi-sub">Noms: ${ev.summary?.registered2026 || ev.registeredGuests} · Quota: ${ev.summary?.quota2026 || "—"}</div>
           </div>
           <div class="kpi-icon" style="background:#f59e0b15">${ICONS.person}</div>
         </div>
