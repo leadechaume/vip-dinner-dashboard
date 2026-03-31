@@ -514,6 +514,27 @@ function processData(allGuests, sponsorTables, rawSummary) {
 
   const summaryRows = summary.filter(r => r["Category"] && !["total","coe staff (seated)"].includes((r["Category"]||"").toLowerCase()));
 
+  // Contract ticket delegations grouped by organization
+  const ctGuests = ag.filter(g => g["REGISTRANT TYPE"] === "Contract ticket");
+  const ctByOrg = {};
+  ctGuests.forEach(g => {
+    const org = g["ORGANIZATION"] || "Unknown";
+    if (!ctByOrg[org]) ctByOrg[org] = [];
+    ctByOrg[org].push({
+      name: g["FULL NAME"] || "",
+      rsvp: (g["RSVP STATUS"] || "").toLowerCase().trim(),
+    });
+  });
+  const contractTicketDelegations = Object.entries(ctByOrg)
+    .map(([org, guests]) => ({
+      org,
+      guests,
+      total: guests.length,
+      named: guests.filter(g => g.name).length,
+      confirmed: guests.filter(g => g.rsvp === "attending" || g.rsvp === "confirmed").length,
+    }))
+    .sort((a, b) => b.total - a.total);
+
   return {
     pbw: {
       totalRevenue, confirmedRevenue, pendingRevenue: pendingTableRevenue,
@@ -529,7 +550,7 @@ function processData(allGuests, sponsorTables, rawSummary) {
       confirmedTableCount: confirmedTables.length,
       pendingTableCount: pendingTables.length,
       byType, rsvpFromSummary, rsvpFromSheet,
-      sponsorDetails, allSpeakersSponsorLinked, shuttleCount, shuttleConfirmed,
+      sponsorDetails, contractTicketDelegations, allSpeakersSponsorLinked, shuttleCount, shuttleConfirmed,
       dietaryRequests,
       confirmedGuestsCount: rsvpFromSheet.attending,
       summary: summaryTotal ? {
@@ -815,7 +836,8 @@ function render() {
         <span><span class="drill-chip confirmed" style="font-size:10px;padding:1px 6px">Name</span> Confirmed</span>
         <span><span class="drill-chip pending" style="font-size:10px;padding:1px 6px">Name</span> Pending RSVP</span>
         <span><span class="drill-chip declined" style="font-size:10px;padding:1px 6px">Name</span> Declined</span>
-        <span><span class="drill-chip empty" style="font-size:10px;padding:1px 6px">Empty seat</span> Unassigned</span>
+        <span><span class="drill-chip pending" style="font-size:10px;padding:1px 6px;font-style:italic">Unnamed</span> Name TBD</span>
+        <span><span class="drill-chip empty" style="font-size:10px;padding:1px 6px">Empty seat</span> Won't be filled</span>
         <span style="color:var(--purple);font-weight:600">SPK</span> = Speaker
       </div>
       <div style="overflow-x:auto">
@@ -847,7 +869,7 @@ function render() {
               (t.extractedSpeakerList || []).forEach(g => {
                 tableChips.push(`<span class="drill-chip ${rsvpCls(g.rsvp)} speaker">${g.name || "—"} <span style="color:var(--amber);font-size:9px">SPK ext.</span></span>`);
               });
-              // Empty seats
+              // Empty seats = quota minus delegation minus in-delegation speakers
               const emptySeats = Math.max(0, t.contract - t.officialDelegation - t.speakersInDelegation);
               for (let i = 0; i < emptySeats; i++) tableChips.push('<span class="drill-chip empty">Empty seat</span>');
               // Build CONTRACT TICKET chips
@@ -897,6 +919,49 @@ function render() {
         </table>
       </div>
     </div>
+
+    <!-- Contract Ticket Delegations -->
+    ${ev.contractTicketDelegations && ev.contractTicketDelegations.length > 0 ? `
+    <div class="section">
+      <div class="section-head">
+        <h3>Contract Ticket Delegations</h3>
+        <span class="section-badge">${ev.contractTicketDelegations.reduce((s,d)=>s+d.total,0)} tickets</span>
+        <span class="section-badge" style="background:#dcfce7;color:#166534">${ev.contractTicketDelegations.reduce((s,d)=>s+d.confirmed,0)} confirmed</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Organization</th><th class="c">Tickets</th><th class="c">Named</th><th class="c">Confirmed</th><th>RSVP Rate</th></tr></thead>
+          <tbody>
+            ${ev.contractTicketDelegations.map((d, idx) => {
+              const rsvpPct = d.total > 0 ? Math.round(d.confirmed / d.total * 100) : 0;
+              const pctColor = rsvpPct >= 80 ? "var(--green)" : rsvpPct >= 50 ? "var(--amber)" : "var(--red)";
+              const rsvpCls = (rsvp) => (rsvp === "attending" || rsvp === "confirmed") ? "confirmed" : (rsvp.includes("not attending") || rsvp === "declined" || rsvp === "cancelled") ? "declined" : "pending";
+              const chips = d.guests.map(g => {
+                const nameLabel = g.name ? g.name : '<em>Unnamed guest</em>';
+                return '<span class="drill-chip ' + rsvpCls(g.rsvp) + '">' + nameLabel + '</span>';
+              }).join("");
+              const ctDrillId = "ct-drill-" + idx;
+              return '<tr class="drill-toggle" onclick="var el=document.getElementById(\'' + ctDrillId + '\');var ar=this.querySelector(\'.drill-arrow\');el.classList.toggle(\'open\');ar.classList.toggle(\'open\');">' +
+                '<td class="b"><span class="drill-arrow">&#9654;</span>' + d.org + '</td>' +
+                '<td class="c">' + d.total + '</td>' +
+                '<td class="c">' + d.named + ' / ' + d.total + '</td>' +
+                '<td class="c">' + d.confirmed + '</td>' +
+                '<td><div style="display:flex;align-items:center;gap:8px"><div class="minibar" style="width:80px"><div class="minibar-fill" style="width:' + Math.min(rsvpPct,100) + '%;background:' + pctColor + '"></div></div><span style="font-size:12px;font-weight:600;color:' + pctColor + '">' + rsvpPct + '%</span></div></td>' +
+              '</tr>' +
+              '<tr class="drill-row"><td colspan="5"><div id="' + ctDrillId + '" class="drill-content"><div class="drill-list">' + (chips || '<span style="color:var(--muted);font-size:12px">No guests</span>') + '</div></div></td></tr>';
+            }).join("")}
+            <tr class="total-row">
+              <td>TOTAL</td>
+              <td class="c">${ev.contractTicketDelegations.reduce((s,d)=>s+d.total,0)}</td>
+              <td class="c">${ev.contractTicketDelegations.reduce((s,d)=>s+d.named,0)} / ${ev.contractTicketDelegations.reduce((s,d)=>s+d.total,0)}</td>
+              <td class="c">${ev.contractTicketDelegations.reduce((s,d)=>s+d.confirmed,0)}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    ` : ''}
 
     <!-- Speakers linked to Sponsors -->
     ${ev.allSpeakersSponsorLinked.length > 0 ? `
