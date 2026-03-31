@@ -138,6 +138,20 @@
   .coming-soon { text-align:center; padding:80px 20px; color:var(--muted); }
   .coming-soon svg { margin-bottom:16px; }
   .pending-tag { font-size:10px; background:#fef9c3; color:#854d0e; padding:1px 6px; border-radius:4px; margin-left:6px; font-weight:600; vertical-align:middle; }
+  .drill-row td { padding:0 !important; border:none !important; }
+  .drill-content { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+  .drill-content.open { max-height:600px; overflow-y:auto; }
+  .drill-list { display:flex; flex-wrap:wrap; gap:6px; padding:10px 16px; }
+  .drill-chip { font-size:11px; padding:3px 10px; border-radius:12px; background:var(--bg); border:1px solid var(--border2); white-space:nowrap; }
+  .drill-chip.confirmed { background:#dcfce7; color:#166534; border-color:#bbf7d0; }
+  .drill-chip.pending { background:#fef9c3; color:#854d0e; border-color:#fde68a; }
+  .drill-chip.declined { background:#fecaca; color:#991b1b; border-color:#fca5a5; }
+  .drill-chip.speaker { border-color:var(--purple); }
+  .drill-chip.empty { color:var(--muted); font-style:italic; border-style:dashed; }
+  .drill-toggle { cursor:pointer; user-select:none; }
+  .drill-toggle:hover { background:var(--bg); }
+  .drill-arrow { display:inline-block; transition:transform 0.2s; font-size:10px; margin-right:4px; color:var(--muted); }
+  .drill-arrow.open { transform:rotate(90deg); }
 </style>
 </head>
 <body>
@@ -429,6 +443,17 @@ function processData(allGuests, sponsorTables, rawSummary) {
       speakersInDelegation: speakersStillIn.length,
       speakersExtracted: speakersExtracted.length,
       totalLinkedSpeakers: allLinkedSpeakers.length,
+      // Guest names for drill-down
+      guestList: matchGuests.map(g => ({
+        name: g["FULL NAME"] || "",
+        rsvp: (g["RSVP STATUS"] || "").toLowerCase().trim(),
+        owner: g["OWNER"] || "",
+        isSpeaker: (g["OWNER"] || "").toLowerCase() === "content",
+      })),
+      extractedSpeakerList: speakersExtracted.map(g => ({
+        name: g["FULL NAME"] || "",
+        rsvp: (g["RSVP STATUS"] || "").toLowerCase().trim(),
+      })),
     };
   });
 
@@ -783,7 +808,7 @@ function render() {
         <table>
           <thead><tr><th>Sponsor</th><th>CS</th><th class="c">Tables</th><th class="r">Revenue</th><th class="c">Quota</th><th class="c">Delegation</th><th class="c">Remaining</th><th class="c" style="color:var(--purple)">Speakers</th><th>Quota Fill</th></tr></thead>
           <tbody>
-            ${ev.sponsorDetails.map(t => {
+            ${ev.sponsorDetails.map((t, idx) => {
               // Fill rate based on OFFICIAL delegation only (not speakers)
               const quotaFill = t.contract > 0 ? Math.round(t.officialDelegation / t.contract * 100) : 0;
               const fillColor = quotaFill >= 80 ? "var(--green)" : quotaFill >= 50 ? "var(--amber)" : "var(--red)";
@@ -796,8 +821,28 @@ function render() {
                     ? '<span style="color:var(--purple)">' + t.speakersInDelegation + ' in deleg.</span>'
                     : '<span style="color:var(--amber)">' + t.speakersExtracted + ' extracted</span>')
                 : '<span style="color:var(--light)">0</span>';
-              return `<tr>
-                <td class="b">${t.name}${t.isPending ? '<span class="pending-tag">PENDING</span>' : ''}</td>
+              // Build guest chips
+              const allGuests = [...t.guestList];
+              // Add extracted speakers (Free speakers linked to this sponsor)
+              const extractedSpk = t.extractedSpeakerList || [];
+              const chips = allGuests.map(g => {
+                const rsvpClass = (g.rsvp === "attending" || g.rsvp === "confirmed") ? "confirmed" : (g.rsvp.includes("not attending") || g.rsvp === "declined" || g.rsvp === "cancelled") ? "declined" : "pending";
+                const spkClass = g.isSpeaker ? " speaker" : "";
+                const nameLabel = g.name ? g.name : '<em>Place sans nom</em>';
+                const spkTag = g.isSpeaker ? ' <span style="color:var(--purple);font-size:9px">SPK</span>' : '';
+                return `<span class="drill-chip ${rsvpClass}${spkClass}">${nameLabel}${spkTag}</span>`;
+              });
+              // Add extracted free speakers
+              extractedSpk.forEach(g => {
+                const rsvpClass = (g.rsvp === "attending" || g.rsvp === "confirmed") ? "confirmed" : (g.rsvp.includes("not attending") || g.rsvp === "declined" || g.rsvp === "cancelled") ? "declined" : "pending";
+                chips.push(`<span class="drill-chip ${rsvpClass} speaker">${g.name || "—"} <span style="color:var(--amber);font-size:9px">SPK ext.</span></span>`);
+              });
+              // Empty seats
+              const emptySeats = Math.max(0, t.contract - t.officialDelegation - t.speakersInDelegation);
+              for (let i = 0; i < emptySeats; i++) chips.push('<span class="drill-chip empty">Seat libre</span>');
+              const drillId = "drill-" + idx;
+              return `<tr class="drill-toggle" onclick="var el=document.getElementById('${drillId}');var ar=this.querySelector('.drill-arrow');el.classList.toggle('open');ar.classList.toggle('open');">
+                <td class="b"><span class="drill-arrow">&#9654;</span>${t.name}${t.isPending ? '<span class="pending-tag">PENDING</span>' : ''}</td>
                 <td>${t.cs || "—"}</td>
                 <td class="c">${t.tableEquiv}</td>
                 <td class="r b">${fmt(t.revenue)}</td>
@@ -809,7 +854,8 @@ function render() {
                   <div class="minibar" style="width:80px"><div class="minibar-fill" style="width:${Math.min(quotaFill,100)}%;background:${fillColor}"></div></div>
                   <span style="font-size:12px;font-weight:600;color:${fillColor}">${quotaFill}%</span>
                 </div></td>
-              </tr>`;
+              </tr>
+              <tr class="drill-row"><td colspan="9"><div id="${drillId}" class="drill-content"><div class="drill-list">${chips.length > 0 ? chips.join("") : '<span style="color:var(--muted);font-size:12px">Aucun invité</span>'}</div></div></td></tr>`;
             }).join("")}
             <tr class="total-row">
               <td>TOTAL</td><td></td>
