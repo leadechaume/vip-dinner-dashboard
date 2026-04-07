@@ -504,13 +504,18 @@ function processData(allGuests, sponsorTables, rawSummary) {
   const dietaryRequests = ag.filter(r => {
     const notes = (r["NOTES"] || "").toString().toLowerCase();
     return notes && dietKeywords.some(kw => notes.includes(kw));
-  }).map(r => ({
-    name: r["FULL NAME"] || "—",
-    org: r["ORGANIZATION"] || "—",
-    type: r["REGISTRANT TYPE"] || "—",
-    note: r["NOTES"],
-    rsvp: r["RSVP STATUS"] || "",
-  }));
+  }).map(r => {
+    // Try multiple possible column names for table number
+    const tableNum = r["TABLE"] || r["TABLE NUMBER"] || r["TABLE #"] || r["TABLE N°"] || r["TABLE NO"] || r["TABLE NO."] || r["N° TABLE"] || r["SEAT"] || r["SEATING"] || "";
+    return {
+      name: r["FULL NAME"] || "—",
+      org: r["ORGANIZATION"] || "—",
+      type: r["REGISTRANT TYPE"] || "—",
+      table: tableNum ? String(tableNum).trim() : "",
+      note: r["NOTES"],
+      rsvp: r["RSVP STATUS"] || "",
+    };
+  });
 
   const summaryRows = summary.filter(r => r["Category"] && !["total","coe staff (seated)"].includes((r["Category"]||"").toLowerCase()));
 
@@ -832,13 +837,13 @@ function render() {
         <span class="section-badge">${ev.confirmedTableEquiv} confirmed</span>
         ${ev.pendingTableCount > 0 ? `<span class="section-badge pending">+ ${ev.pendingTableEquiv} pending</span>` : ''}
       </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--muted)">
-        <span><span class="drill-chip confirmed" style="font-size:10px;padding:1px 6px">Name</span> Confirmed</span>
-        <span><span class="drill-chip pending" style="font-size:10px;padding:1px 6px">Name</span> Pending RSVP</span>
-        <span><span class="drill-chip declined" style="font-size:10px;padding:1px 6px">Name</span> Declined</span>
-        <span><span class="drill-chip pending" style="font-size:10px;padding:1px 6px;font-style:italic">Unnamed</span> Name TBD</span>
-        <span><span class="drill-chip empty" style="font-size:10px;padding:1px 6px">Empty seat</span> Won't be filled</span>
-        <span style="color:var(--purple);font-weight:600">SPK</span> = Speaker
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:var(--muted);align-items:center">
+        <span style="font-weight:600;color:var(--text)">Click a row to see names</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block"></span> Confirmed</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#ca8a04;display:inline-block"></span> Awaiting RSVP</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#dc2626;display:inline-block"></span> Declined</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;border:2px dashed #94a3b8;display:inline-block;box-sizing:border-box"></span> Unused seat</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><span style="color:var(--purple);font-weight:700;font-size:10px">SPK</span> Speaker</span>
       </div>
       <div style="overflow-x:auto">
         <table>
@@ -1096,13 +1101,13 @@ function render() {
       </div>
       ${ev.dietaryRequests.length > 0 ? `
       <table>
-        <thead><tr><th>Guest</th><th>Organization</th><th>Type</th><th>Requirement (from Notes)</th><th>RSVP</th></tr></thead>
+        <thead><tr><th>Guest</th><th>Organization</th><th class="c">Table</th><th>Requirement (from Notes)</th><th>RSVP</th></tr></thead>
         <tbody>
           ${ev.dietaryRequests.map(d => `
             <tr>
               <td class="b">${d.name}</td>
               <td>${d.org}</td>
-              <td>${d.type}</td>
+              <td class="c">${d.table || '<span style="color:var(--muted)">—</span>'}</td>
               <td>${d.note}</td>
               <td>${d.rsvp ? (d.rsvp.toLowerCase().includes("attending") ? '<span class="badge badge-green">Attending</span>' : d.rsvp.toLowerCase().includes("not") ? '<span class="badge badge-red">Declined</span>' : '<span class="badge badge-gray">' + d.rsvp + '</span>') : '<span class="badge badge-gray">No RSVP</span>'}</td>
             </tr>
